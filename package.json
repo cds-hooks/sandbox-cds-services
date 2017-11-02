@@ -4,6 +4,11 @@
   "description": "Default CDS Services for the CDS Hooks Sandbox",
   "license": "Apache-2.0",
   "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "lint": "./node_modules/.bin/eslint . --fix",
+    "test": "jest"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cds-hooks/sandbox-cds-services.git"
@@ -11,5 +16,18 @@
   "bugs": {
     "url": "https://github.com/cds-hooks/sandbox-cds-services/issues"
   },
-  "homepage": "https://github.com/cds-hooks/sandbox-cds-services#readme"
+  "homepage": "https://github.com/cds-hooks/sandbox-cds-services#readme",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "eslint": "^4.10.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.8.0",
+    "jest": "^21.2.1",
+    "supertest": "^3.0.0"
+  }
 }
