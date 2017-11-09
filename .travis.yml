@@ -1,0 +1,20 @@
+language: node_js
+sudo: required
+before_install:
+- echo $GCLOUD_CREDENTIALS | openssl enc -d -aes-256-cbc -base64 -A -k $GCLOUD_CREDENTIALS_KEY > fhir-org-cds-services.json
+branches:
+  only:
+    - master
+node_js:
+  - '8.9.1'
+cache:
+  directories:
+    - node_modules
+deploy:
+  provider: gae
+  skip_cleanup: true
+  keyfile: fhir-org-cds-services.json
+  project: fhir-org-cds-services
+  default: true
+  no_promote: true
+  no_stop_previous_version: true

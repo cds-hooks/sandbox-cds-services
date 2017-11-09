@@ -1,0 +1,15 @@
+{
+  "name": "sandbox-cds-services",
+  "version": "1.0.0",
+  "description": "Default CDS Services for the CDS Hooks Sandbox",
+  "license": "Apache-2.0",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cds-hooks/sandbox-cds-services.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cds-hooks/sandbox-cds-services/issues"
+  },
+  "homepage": "https://github.com/cds-hooks/sandbox-cds-services#readme"
+}
