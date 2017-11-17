@@ -1,4 +1,11 @@
-# Sandbox CDS Services [![Coverage Status](https://coveralls.io/repos/github/cds-hooks/sandbox-cds-services/badge.svg?branch=master)](https://coveralls.io/github/cds-hooks/sandbox-cds-services?branch=master)
+# Sandbox CDS Services
+
+[![Build](https://img.shields.io/travis/cds-hooks/sandbox-cds-services.svg)](https://travis-ci.org/cds-hooks/sandbox-cds-services)
+[![Coverage](https://img.shields.io/coveralls/github/cds-hooks/sandbox-cds-services.svg)](https://coveralls.io/github/cds-hooks/sandbox-cds-services?branch=master)
+[![Code Climate](https://img.shields.io/codeclimate/maintainability/cds-hooks/sandbox-cds-services.svg)](https://codeclimate.com/github/cds-hooks/sandbox-cds-services)
+[![Dependencies](http://img.shields.io/gemnasium/cds-hooks/sandbox-cds-services.svg)](https://gemnasium.com/cds-hooks/sandbox-cds-services)
+
+
 This repository hosts the default CDS Services configured for the [CDS Hooks Sandbox](http://sandbox.cds-hooks.org) tool. These services are spun up by a Node.js application hosted on Google App Engine.
 
 ## Getting Started
@@ -39,7 +46,7 @@ To add another default service for the CDS Hooks Sandbox:
 2. Create the service endpoint route in a new file under the `/services` directory
 3. Add a test file to test the service endpoint route under the `/tests` directory
 
-## LICENSE
+## License
 
 Copyright 2017 Cerner Innovation, Inc
 
