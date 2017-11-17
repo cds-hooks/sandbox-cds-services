@@ -19,12 +19,12 @@
   },
   "homepage": "https://github.com/cds-hooks/sandbox-cds-services#readme",
   "dependencies": {
-    "axios": "^0.17.0",
+    "axios": "^0.17.1",
     "body-parser": "^1.18.2",
     "express": "^4.16.2"
   },
   "devDependencies": {
-    "axios-mock-adapter": "^1.9.0",
+    "axios-mock-adapter": "^1.10.0",
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "coveralls": "^3.0.0",
