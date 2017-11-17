@@ -2,6 +2,7 @@
 
 [![Build](https://img.shields.io/travis/cds-hooks/sandbox-cds-services.svg)](https://travis-ci.org/cds-hooks/sandbox-cds-services)
 [![Coverage](https://img.shields.io/coveralls/github/cds-hooks/sandbox-cds-services.svg)](https://coveralls.io/github/cds-hooks/sandbox-cds-services?branch=master)
+[![Code Climate](https://img.shields.io/codeclimate/maintainability/cds-hooks/sandbox-cds-services.svg)](https://codeclimate.com/github/cds-hooks/sandbox-cds-services)
 [![Dependencies](http://img.shields.io/gemnasium/cds-hooks/sandbox-cds-services.svg)](https://gemnasium.com/cds-hooks/sandbox-cds-services)
 
 
