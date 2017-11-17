@@ -5,9 +5,10 @@
   "license": "Apache-2.0",
   "main": "server.js",
   "scripts": {
+    "dev": "nodemon server.js",
     "start": "node server.js",
     "lint": "./node_modules/.bin/eslint . --fix",
-    "test": "jest"
+    "test": "jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
   },
   "repository": {
     "type": "git",
@@ -18,16 +19,26 @@
   },
   "homepage": "https://github.com/cds-hooks/sandbox-cds-services#readme",
   "dependencies": {
+    "axios": "^0.17.0",
     "body-parser": "^1.18.2",
     "express": "^4.16.2"
   },
   "devDependencies": {
+    "axios-mock-adapter": "^1.9.0",
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.6.1",
+    "coveralls": "^3.0.0",
     "eslint": "^4.10.0",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.8.0",
     "jest": "^21.2.1",
+    "nodemon": "^1.12.1",
     "supertest": "^3.0.0"
+  },
+  "jest": {
+    "coveragePathIgnorePatterns": [
+      "/node_modules",
+      "/tests/stubs"
+    ]
   }
 }

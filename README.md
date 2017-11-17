@@ -1,4 +1,4 @@
-# Sandbox CDS Services
+# Sandbox CDS Services [![Coverage Status](https://coveralls.io/repos/github/cds-hooks/sandbox-cds-services/badge.svg?branch=master)](https://coveralls.io/github/cds-hooks/sandbox-cds-services?branch=master)
 This repository hosts the default CDS Services configured for the [CDS Hooks Sandbox](http://sandbox.cds-hooks.org) tool. These services are spun up by a Node.js application hosted on Google App Engine.
 
 ## Getting Started
@@ -9,7 +9,7 @@ npm install
 
 Once the dependencies are installed locally, you can run the server on localhost.
 ```javascript
-npm start
+npm run dev
 ```
 
 You can test out this app from `http://localhost:3000`. Try hitting the discovery endpoint at `http://localhost:3000/cds-services`.
@@ -21,7 +21,7 @@ To lint:
 ```javascript
 npm run lint
 ```
-This project contains unit tests using the [Jest](https://facebook.github.io/jest/) library. Discovery and CDS Service endpoints are tested by each route and expected behavior. 
+This project contains unit tests using the [Jest](https://facebook.github.io/jest/) library. Discovery and CDS Service endpoints are tested by each route and expected behavior.
 
 To test:
 ```javascript
