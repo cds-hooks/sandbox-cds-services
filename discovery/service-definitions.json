@@ -7,5 +7,11 @@
     "prefetch": {
       "patient": "Patient/{{Patient.id}}"
     }
+  },
+  {
+    "id": "cms-price-check",
+    "title": "CMS Pricing Service",
+    "description": "Determine if an authored prescription has a cheaper alternative to switch to and display pricing",
+    "hook": "medication-prescribe"
   }
 ]
