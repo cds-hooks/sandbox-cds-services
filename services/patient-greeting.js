@@ -48,7 +48,11 @@ function buildCard(patient) {
 // CDS Service endpoint
 router.post('/', (request, response) => {
   if (!isValidPrefetch(request)) {
-    const { fhirServer, fhirAuthorization, patient } = request.body;
+    const { fhirServer, fhirAuthorization } = request.body;
+    let patient;
+    if (request.body.context) {
+      patient = request.body.context.patientId;
+    }
     if (fhirServer && patient) {
       let accessToken;
       if (fhirAuthorization && fhirAuthorization.access_token) {

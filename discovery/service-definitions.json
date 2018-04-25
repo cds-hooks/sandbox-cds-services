@@ -5,7 +5,7 @@
     "description": "Display which patient the user is currently working with",
     "hook": "patient-view",
     "prefetch": {
-      "patient": "Patient/{{Patient.id}}"
+      "patient": "Patient/{{context.patientId}}"
     }
   },
   {
