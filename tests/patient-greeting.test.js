@@ -69,7 +69,7 @@ describe('Patient Greeting Service Endpoint', () => {
         test('returns a card if the FHIR response was valid at an open endpoint', (done) => {
           let headers;
           requestStub = stub.requestWithOpenFhirServer;
-          mock.onGet(`${requestStub.fhirServer}/Patient/${requestStub.patient}`)
+          mock.onGet(`${requestStub.fhirServer}/Patient/${requestStub.context.patientId}`)
             .reply((config) => {
               headers = config.headers;
               return [
@@ -96,7 +96,7 @@ describe('Patient Greeting Service Endpoint', () => {
 
         test('returns a card if the FHIR response was valid at a secured endpoint', (done) => {
           let headers;
-          mock.onGet(`${requestStub.fhirServer}/Patient/${requestStub.patient}`)
+          mock.onGet(`${requestStub.fhirServer}/Patient/${requestStub.context.patientId}`)
             .reply((config) => {
               headers = config.headers;
               return [
@@ -122,7 +122,7 @@ describe('Patient Greeting Service Endpoint', () => {
         });
 
         test('returns a 412 if the FHIR service call failed', (done) => {
-          mock.onGet(`${requestStub.fhirServer}/Patient/${requestStub.patient}`)
+          mock.onGet(`${requestStub.fhirServer}/Patient/${requestStub.context.patientId}`)
             .networkError();
 
           request(app)
@@ -136,7 +136,7 @@ describe('Patient Greeting Service Endpoint', () => {
         });
 
         test('returns a 412 if the FHIR response is invalid', (done) => {
-          mock.onGet(`${requestStub.fhirServer}/Patient/${requestStub.patient}`)
+          mock.onGet(`${requestStub.fhirServer}/Patient/${requestStub.context.patientId}`)
             .reply(200, {
               name: [{
                 given: []
