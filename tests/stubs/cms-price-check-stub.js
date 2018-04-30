@@ -1,80 +1,91 @@
 const rxnormSystem = 'http://www.nlm.nih.gov/research/umls/rxnorm';
 
 const createRequestContext = (resourceType, system, code) => {
+  let patientPropertyName = resourceType === 'MedicationOrder' ? 'patient' : 'subject';
   return {
-    resourceType: resourceType,
-    patient: { reference: 'Patient/patient-example' },
-    medicationCodeableConcept: {
-      coding: [
-        {
-          display: 'Some Arbitrary Medication',
-          system: system,
-          code: code
-        }
-      ]
-    }
+    resource: {
+      resourceType: resourceType,
+      [`${patientPropertyName}`]: { reference: 'Patient/patient-example' },
+      medicationCodeableConcept: {
+        coding: [
+          {
+            display: 'Some Arbitrary Medication',
+            system: system,
+            code: code,
+          },
+        ],
+      },
+    },
   };
 };
 
 const createContextWithMultipleCodings = () => {
   return {
-    resourceType: 'MedicationOrder',
-    patient: { reference: 'Patient/patient-example' },
-    medicationCodeableConcept: {
-      coding: [
-        {
-          display: 'Some Arbitrary Medication',
-          system: 'google.com',
-          code: '123'
-        },
-        {
-          display: 'Some Arbitrary Medication',
-          system: rxnormSystem,
-          code: '251374'
-        }
-      ]
-    }
-  }
+    resource: {
+      resourceType: 'MedicationOrder',
+      patient: { reference: 'Patient/patient-example' },
+      medicationCodeableConcept: {
+        coding: [
+          {
+            display: 'Some Arbitrary Medication',
+            system: 'google.com',
+            code: '123',
+          },
+          {
+            display: 'Some Arbitrary Medication',
+            system: rxnormSystem,
+            code: '251374',
+          },
+        ],
+      },
+    },
+  };
 };
 
 const createContextWithoutCoding = () => {
   return {
-    resourceType: 'MedicationOrder',
-    patient: { reference: 'Patient/patient-example' },
-    medicationCodeableConcept: {
-      foo: 'foo'
-    }
-  }
+    resource: {
+      resourceType: 'MedicationOrder',
+      patient: { reference: 'Patient/patient-example' },
+      medicationCodeableConcept: {
+        foo: 'foo',
+      },
+    },
+  };
 };
 
 const createContextWithoutMedCode = () => {
   return {
-    resourceType: 'MedicationOrder',
-    patient: { reference: 'Patient/patient-example' },
-    medicationCodeableConcept: {
-      coding: [
-        {
-          display: 'Some Arbitrary Medication',
-          system: rxnormSystem
-        }
-      ]
-    }
-  }
+    resource: {
+      resourceType: 'MedicationOrder',
+      patient: { reference: 'Patient/patient-example' },
+      medicationCodeableConcept: {
+        coding: [
+          {
+            display: 'Some Arbitrary Medication',
+            system: rxnormSystem
+          },
+        ],
+      },
+    },
+  };
 };
 
 const createContextWithoutPatientInMed = () => {
   return {
-    resourceType: 'MedicationOrder',
-    medicationCodeableConcept: {
-      coding: [
-        {
-          display: 'Some Arbitrary Medication',
-          system: rxnormSystem,
-          code: '251374'
-        }
-      ]
-    }
-  }
+    resource: {
+      resourceType: 'MedicationOrder',
+      medicationCodeableConcept: {
+        coding: [
+          {
+            display: 'Some Arbitrary Medication',
+            system: rxnormSystem,
+            code: '251374'
+          },
+        ],
+      },
+    },
+  };
 };
 
 const createResponseCard = (cost, newResource, savings) => {
@@ -95,6 +106,7 @@ const createResponseCard = (cost, newResource, savings) => {
           actions: [
             {
               type: 'create',
+              description: 'Create a resource with the newly suggested medication',
               resource: newResource
             }
           ]
@@ -146,7 +158,12 @@ module.exports = {
     return {
       context: {
         patientId: 'patient-example',
-        'medications': [ createRequestContext(resourceType || 'MedicationOrder', system || rxnormSystem, code) ]
+        medications: {
+          resourceType: 'Bundle',
+          entry: [
+            createRequestContext(resourceType || 'MedicationOrder', system || rxnormSystem, code),
+          ]
+        }
       }
     };
   },
@@ -154,58 +171,115 @@ module.exports = {
     return {
       context: {
         patientId: 'patient-example',
-        'medications': [
-          createRequestContext(resourceType || 'MedicationOrder', system || rxnormSystem, code),
-          createRequestContext('MedicationOrder', 'http://google.com', code)
-        ]
-      }
+        medications: {
+          resourceType: 'Bundle',
+          entry: [
+            createRequestContext(resourceType || 'MedicationOrder', system || rxnormSystem, code),
+            createRequestContext('MedicationOrder', 'http://google.com', code),
+          ],
+        },
+      },
     };
   },
   multipleCodingsInResource: {
     context: {
       patientId: 'patient-example',
-      'medications': [createContextWithMultipleCodings()]
-    }
+      medications: {
+        resourceType: 'Bundle',
+        entry: [
+          createContextWithMultipleCodings(),
+        ],
+      },
+    },
   },
   createContextWithoutCoding: {
     context: {
       patientId: 'patient-example',
-      'medications': [ createContextWithoutCoding() ]
-    }
+      medications: {
+        resourceType: 'Bundle',
+        entry: [
+          createContextWithoutCoding(),
+        ],
+      },
+    },
   },
   createContextWithoutCode: {
     context: {
       patientId: 'patient-example',
-      'medications': [ createContextWithoutMedCode() ]
-    }
+      medications: {
+        resourceType: 'Bundle',
+        entry: [
+          createContextWithoutMedCode(),
+        ],
+      },
+    },
   },
   createContextWithoutPatient: {
     context: {
-      'medications': [ createRequestContext('MedicationOrder', rxnormSystem, '251374') ]
-    }
+      medications: {
+        resourceType: 'Bundle',
+        entry: [
+          createRequestContext('MedicationOrder', rxnormSystem, '251374'),
+        ],
+      },
+    },
   },
   createContextWithoutPatientInMed: {
     context: {
       patientId: 'patient-example',
-      'medications': [ createContextWithoutPatientInMed() ]
-    }
+      medications: {
+        resourceType: 'Bundle',
+        entry: [
+          createContextWithoutPatientInMed(),
+        ],
+      },
+    },
   },
   createContextWithPatientMismatch: {
     context: {
       patientId:'wrong-patient-example',
-      'medications': [ createRequestContext('MedicationOrder', rxnormSystem, '251374') ]
-    }
+      medications: {
+        resourceType: 'Bundle',
+        entry: [
+          createRequestContext('MedicationOrder', rxnormSystem, '251374'),
+        ],
+      },
+    },
   },
   createContextWithoutMedicationsInProgress: {
     context: {
-      patientId:'patient-example'
-    }
+      patientId:'patient-example',
+    },
   },
   createContextWithWrongResourceType: {
     context: {
       patientId:'patient-example',
-      'medications': [ createRequestContext('Patient', rxnormSystem, '251374') ]
-    }
+      medications: {
+        resourceType: 'Bundle',
+        entry: [
+          createRequestContext('Patient', rxnormSystem, '251374'),
+        ],
+      },
+    },
+  },
+  createContextWithoutBundleType: {
+    context: {
+      patientId: 'patient-example',
+      medications: [ createRequestContext('Patient', rxnormSystem, '251374') ],
+    },
+  },
+  createContextWithoutProperEntry: {
+    context: {
+      patientId: 'patient-example',
+      medications: {
+        resourceType: 'Bundle',
+        entry: [
+          {
+            foo: 'foo',
+          },
+        ],
+      },
+    },
   },
 
   /**
