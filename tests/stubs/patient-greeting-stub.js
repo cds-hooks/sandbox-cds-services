@@ -29,12 +29,16 @@ module.exports = {
     fhirAuthorization: {
       access_token: 'foo-token'
     },
-    patient: 'foo-id',
+    context: {
+      patientId: 'foo-id',
+    }
   },
   requestWithOpenFhirServer: {
     hook: 'patient-view',
     fhirServer: 'http://some-fhir-server/open',
-    patient: 'foo-id',
+    context: {
+      patientId: 'foo-id',
+    }
   },
   validResponse: {
     cards: [
