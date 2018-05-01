@@ -22,11 +22,17 @@ function getValidCodingFromConcept(medicationCodeableConcept) {
   return coding;
 }
 
+function verifyPatient(resource, context) {
+  return (resource.patient && resource.patient.reference === `Patient/${context.patientId}`) ||
+    (resource.subject && resource.subject.reference === `Patient/${context.patientId}`);
+}
+
 function getValidResource(resource, context) {
   let coding = null;
   if (resource.resourceType === 'MedicationOrder' || resource.resourceType === 'MedicationRequest') {
-    // Check if patient in reference from medication resource refers to patient in context
-    if (resource.patient && resource.patient.reference === `Patient/${context.patientId}`) {
+    // Check if patient in reference from medication resource refers to patient in context, and
+    // flex parsing to read from DSTU2 or STU3 MedicationOrder/MedicationRequest syntax
+    if (verifyPatient(resource, context)) {
       const { medicationCodeableConcept } = resource;
       coding = getValidCodingFromConcept(medicationCodeableConcept);
     }
@@ -34,17 +40,27 @@ function getValidResource(resource, context) {
   return coding;
 }
 
-function getValidContextResources(request) {
+function getValidResourceEntries(medResources, context) {
   const resources = [];
+  if (medResources.resourceType === 'Bundle' && medResources.entry && medResources.entry.length) {
+    medResources.entry.forEach((entryResource) => {
+      if (entryResource.resource) {
+        const isValidResource = getValidResource(entryResource.resource, context);
+        if (isValidResource) {
+          resources.push(entryResource.resource);
+        }
+      }
+    });
+  }
+  return resources;
+}
+
+function getValidContextResources(request) {
+  let resources = [];
   const { context } = request.body;
   if (context && context.patientId && context.medications) {
     const medResources = context.medications;
-    medResources.forEach((resource) => {
-      const isValidResource = getValidResource(resource, context);
-      if (isValidResource) {
-        resources.push(resource);
-      }
-    });
+    resources = getValidResourceEntries(medResources, context);
   }
   return resources;
 }
@@ -63,6 +79,7 @@ function constructCard(summary, suggestionResource) {
       actions: [
         {
           type: 'create',
+          description: 'Create a resource with the newly suggested medication',
           resource: suggestionResource,
         },
       ],

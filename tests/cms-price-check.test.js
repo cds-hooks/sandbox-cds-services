@@ -71,6 +71,14 @@ describe('CMS Price Check Service Endpoint', () => {
         sendRequestAndVerifyEmptyResponse(stub.createContextWithPatientMismatch, done);
       });
 
+      test('when medications is not of type bundle', (done) => {
+        sendRequestAndVerifyEmptyResponse(stub.createContextWithoutBundleType, done);
+      });
+
+      test('when medications entries do not have the proper resource attribute', (done) => {
+        sendRequestAndVerifyEmptyResponse(stub.createContextWithoutProperEntry, done);
+      });
+
       test('when resource type does not match MedicationOrder or MedicationRequest', (done) => {
         sendRequestAndVerifyEmptyResponse(stub.createContextWithWrongResourceType, done);
       });
