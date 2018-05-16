@@ -9,10 +9,10 @@ function isDataAvailable(patient) {
 
 function isValidPrefetch(request) {
   const data = request.body;
-  if (!(data && data.prefetch && data.prefetch.patient && data.prefetch.patient.resource)) {
+  if (!(data && data.prefetch && data.prefetch.patient)) {
     return false;
   }
-  return isDataAvailable(data.prefetch.patient.resource);
+  return isDataAvailable(data.prefetch.patient);
 }
 
 function retrievePatientResource(fhirServer, patientId, accessToken) {
@@ -69,7 +69,7 @@ router.post('/', (request, response) => {
     response.sendStatus(412);
     return;
   }
-  const { resource } = request.body.prefetch.patient;
+  const resource = request.body.prefetch.patient;
   response.json(buildCard(resource));
 });
 
