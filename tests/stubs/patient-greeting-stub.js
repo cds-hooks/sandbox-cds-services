@@ -8,15 +8,13 @@ module.exports = {
     hook: 'patient-view',
     prefetch: {
       patient: {
-        resource: {
-          name: [
-            {
-              given: [
-                `${getGivenName()}`,
-              ],
-            },
-          ],
-        },
+        name: [
+          {
+            given: [
+              `${getGivenName()}`,
+            ],
+          },
+        ],
       },
     },
   },
