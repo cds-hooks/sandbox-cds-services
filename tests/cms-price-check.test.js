@@ -59,8 +59,12 @@ describe('CMS Price Check Service Endpoint', () => {
         sendRequestAndVerifyEmptyResponse(stub.createContextWithoutPatient, done);
       });
 
-      test('when medications-in-progress property is not in context', (done) => {
-        sendRequestAndVerifyEmptyResponse(stub.createContextWithoutMedicationsInProgress, done);
+      test('when draftOrders property is not in context', (done) => {
+        sendRequestAndVerifyEmptyResponse(stub.createContextWithoutDraftOrders, done);
+      });
+
+      test('when selections property is not in context', (done) => {
+        sendRequestAndVerifyEmptyResponse(stub.createContextWithoutSelections, done);
       });
 
       test('when patient property is not in med resource', (done) => {
@@ -96,7 +100,7 @@ describe('CMS Price Check Service Endpoint', () => {
       });
 
       test('when medicationCodeableConcept property is not present in context', (done) => {
-        sendRequestAndVerifyEmptyResponse(stub.createContextWithoutCode, done);
+        sendRequestAndVerifyEmptyResponse(stub.createContextWithoutCodeableConcept, done);
       });
     });
 

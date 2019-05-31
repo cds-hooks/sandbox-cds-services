@@ -39,7 +39,7 @@ npm run test
 The following services are configured for this application:
 
 `patient-greeting`: A CDS Service configured for the `patient-view` hook. The service prefetches the Patient resource of the patient in context of the EHR and returns a proper greeting that displays what patient is being seen by the current provider.
-`cms-price-check`: A CDS Service configured for the `medication-prescribe` hook. The service reads the context of a medication being authored and determines if a cheaper prescription alternative may be available to switch to based on historical pharmacy dispensing data. Prices will be displayed for chosen medication.
+`cms-price-check`: A CDS Service configured for the `order-select` hook. The service reads the context of a medication being authored and determines if a cheaper prescription alternative may be available to switch to based on historical pharmacy dispensing data. Prices will be displayed for chosen medication.
 
 ## Adding a CDS Service
 
