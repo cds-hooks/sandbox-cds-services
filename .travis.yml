@@ -1,7 +1,7 @@
 language: node_js
 sudo: required
 before_install:
-- echo $GCLOUD_CREDENTIALS | openssl enc -d -aes-256-cbc -base64 -A -k $GCLOUD_CREDENTIALS_KEY > fhir-org-cds-services.json
+- if [[ ! -z "$GCLOUD_CREDENTIALS" ]]; then echo $GCLOUD_CREDENTIALS | openssl enc -d -aes-256-cbc -base64 -A -k $GCLOUD_CREDENTIALS_KEY > fhir-org-cds-services.json; fi
 branches:
   only:
     - master
