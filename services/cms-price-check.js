@@ -27,9 +27,9 @@ function verifyPatient(resource, context) {
     (resource.subject && resource.subject.reference === `Patient/${context.patientId}`);
 }
 
-function getValidResource(resource, context) {
+function getValidResource(selections, resource, context) {
   let coding = null;
-  if (resource.resourceType === 'MedicationOrder' || resource.resourceType === 'MedicationRequest') {
+  if (['MedicationRequest', 'MedicationOrder'].includes(resource.resourceType) && selections.includes(`${resource.resourceType}/${resource.id}`)) {
     // Check if patient in reference from medication resource refers to patient in context, and
     // flex parsing to read from DSTU2 or STU3 MedicationOrder/MedicationRequest syntax
     if (verifyPatient(resource, context)) {
@@ -40,12 +40,12 @@ function getValidResource(resource, context) {
   return coding;
 }
 
-function getValidResourceEntries(medResources, context) {
+function getValidResourceEntries(selections, draftOrders, context) {
   const resources = [];
-  if (medResources.resourceType === 'Bundle' && medResources.entry && medResources.entry.length) {
-    medResources.entry.forEach((entryResource) => {
+  if (selections.length && draftOrders.resourceType === 'Bundle' && draftOrders.entry && draftOrders.entry.length) {
+    draftOrders.entry.forEach((entryResource) => {
       if (entryResource.resource) {
-        const isValidResource = getValidResource(entryResource.resource, context);
+        const isValidResource = getValidResource(selections, entryResource.resource, context);
         if (isValidResource) {
           resources.push(entryResource.resource);
         }
@@ -58,9 +58,8 @@ function getValidResourceEntries(medResources, context) {
 function getValidContextResources(request) {
   let resources = [];
   const { context } = request.body;
-  if (context && context.patientId && context.medications) {
-    const medResources = context.medications;
-    resources = getValidResourceEntries(medResources, context);
+  if (context && context.patientId && context.selections && context.draftOrders) {
+    resources = getValidResourceEntries(context.selections, context.draftOrders, context);
   }
   return resources;
 }
