@@ -36,11 +36,18 @@ function buildCard(patient) {
   const name = patient.name[0].given[0];
   return {
     cards: [{
-      summary: `Now seeing: ${name}`,
+      summary: `You sir are now seeing: ${name}`,
       source: {
         label: 'Patient greeting service',
       },
       indicator: 'info',
+      links:  [
+    {
+      "label": "eMedication SMART app",
+      "url": "https://example.com/launch",
+      "type": "smart"
+    }
+  ],
     }],
   };
 }

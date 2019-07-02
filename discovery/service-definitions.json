@@ -8,10 +8,20 @@
       "patient": "Patient/{{context.patientId}}"
     }
   },
-  {
+ {
     "id": "cms-price-check",
     "title": "CMS Pricing Service",
     "description": "Determine if an authored prescription has a cheaper alternative to switch to and display pricing",
     "hook": "order-select"
+  },{
+    "id": "pama-imaging-select",
+    "title": "PAMA Imaging Demo Checker (order-select)", 
+    "description": "Demo service to apply PAMA checking rules to rate imaging order appropriateness",
+    "hook": "order-select"
+  },{
+    "id": "pama-imaging-sign",
+    "title": "PAMA Imaging Demo Checker (order-sign)",
+    "description": "Demo service to apply PAMA checking rules to rate imaging order appropriateness",
+    "hook": "order-sign"
   }
 ]

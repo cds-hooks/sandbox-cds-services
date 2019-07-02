@@ -5,4 +5,5 @@ module.exports = (err, request, response, next) => {
   response.status(status);
   response.set('Content-Type', 'text/html');
   response.send(status !== 500 ? err.message : 'Internal Server Error');
+  console.log(err)
 };
