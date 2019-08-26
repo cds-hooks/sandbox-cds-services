@@ -16,7 +16,7 @@ router.get('/', (request, response) => {
 
 // Routes to patient-greeting CDS Service
 router.use('/cms-price-check', cmsPriceCheck);
-router.use('/pama-scenarios', pamaImagingService);
+router.use('/pama-imaging', pamaImagingService);
 router.use('/patient-greeting', patientGreetingService);
 
 module.exports = router;
