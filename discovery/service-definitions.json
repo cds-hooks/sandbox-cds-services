@@ -9,7 +9,7 @@
     "id": "pama-imaging",
     "title": "Pama Imaging Connectathon 2019 Scenarios",
     "description": "Produce an appropriateness score according to scenario inputs.",
-    "hook": "pama-imaging"
+    "hook": "order-select"
   },
   {
     "id": "patient-greeting",
