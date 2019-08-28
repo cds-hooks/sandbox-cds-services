@@ -17,6 +17,7 @@ describe('PAMA Imaging Service Endpoint', () => {
       .type('json');
 
     expect(response.status).toEqual(200);
+    console.log(response.body);
     const { systemActions } = response.body.extension;
 
     expect(systemActions).toHaveLength(1);
