@@ -1,5 +1,6 @@
 /* eslint-disable no-bitwise */
 /* eslint-disable no-restricted-syntax */
+/* eslint-disable quote-props */
 const express = require('express');
 const uuid = require('uuid');
 
@@ -20,19 +21,45 @@ const findResources = (entries, selections) =>
         .filter(r => r.resourceType === resourceType && r.id === resourceId)[0]);
 
 
+const SNOMED = 'http://snomed.info/sct'
+const CPT = 'http://www.ama-assn.org/go/cpt'
+
+// TODO: populate this with more data.
+const appropriateCPTReasons = {
+  '72133': { SNOMED: [['279039007']].map(x => new Set(x)) },
+};
+
+function findCodes(codes, systemName) {
+  return codes.filter(c => c.coding.system === systemName).map(c => c.code);
+}
+
+function covers(subset, set) {
+  if (subset.size > set.size) return false;
+  for (const member of subset) if (!set.has(member)) return false;
+  return true;
+}
+
 function getRatings(resource) {
-  // TODO: get the cpt code from the resource
-  // TODO: get the SNOMED code
-  // TODO: return an empty list if the reason code or cpt codes are not covered by the track
-  // TODO: get the appropriate cpt codes mapped to the reason code
-  // TODO: return apt or not-apt
+  const cpt = findCodes([resource.code], CPT);
+  if (!cpt.length) {
+    console.log('no CPT code found in resource:', resource);
+    return [];
+  }
+  if (!(cpt[0] in appropriateCPTReasons)) {
+    console.log('pama doesn\'t care about cpt code:', cpt);
+    return [];
+  }
+  const reasons = new Set(findCodes(resource.reasonCode, SNOMED));
+  const found = appropriateCPTReasons[cpt][SNOMED].filter(r => covers(r, reasons));
+  const appropriate = found.length === 0 ? 'not-appropriate' : 'appropriate';
+
   return [
     {
       url: 'http://fhir.org/argonaut/Extension/pama-rating',
       valueCodeableConcept: {
         coding: [{
           system: 'http://fhir.org/argonaut/CodeSystem/pama-rating',
-          code: 'appropriate',
+          code: appropriate,
         }],
       },
     },
