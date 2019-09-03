@@ -24,19 +24,41 @@ const findResources = (entries, selections) =>
 const SNOMED = 'http://snomed.info/sct'
 const CPT = 'http://www.ama-assn.org/go/cpt'
 
-// TODO: populate this with more data.
-const appropriateCPTReasons = {
-  '72133': { SNOMED: [['279039007']].map(x => new Set(x)) },
-};
-
-function findCodes(codes, systemName) {
-  return codes.filter(c => c.coding.system === systemName).map(c => c.code);
-}
-
 function covers(subset, set) {
   if (subset.size > set.size) return false;
   for (const member of subset) if (!set.has(member)) return false;
   return true;
+}
+
+class Apt {
+  constructor(yes, no) {
+    this.yes = yes.map(x => new Set(x));
+    this.no = no.map(x => new Set(x));
+  }
+
+  getRating(reasons) {
+    if (this.yes.filter(s => covers(s, reasons)).length) {
+      return 'appropriate';
+    }
+    if (this.no.filter(s => covers(s, reasons)).length) {
+      return 'not-appropriate';
+    }
+    return 'no-guidelines-apply';
+  }
+}
+
+const cptReasons = {
+  '72133': new Apt([], [['279039007']]),
+  '70450': new Apt([['25064002', '423341008 ']], []),
+  '70544': new Apt([], []),
+};
+
+function findCodes(codes, systemName) {
+  return codes
+    .map(c => c.coding
+      .filter(x => x.system === systemName)
+      .map(x => x.code))
+    .flat();
 }
 
 function getRatings(resource) {
@@ -45,21 +67,19 @@ function getRatings(resource) {
     console.log('no CPT code found in resource:', resource);
     return [];
   }
-  if (!(cpt[0] in appropriateCPTReasons)) {
+  if (!(cpt[0] in cptReasons)) {
     console.log('pama doesn\'t care about cpt code:', cpt);
     return [];
   }
   const reasons = new Set(findCodes(resource.reasonCode, SNOMED));
-  const found = appropriateCPTReasons[cpt][SNOMED].filter(r => covers(r, reasons));
-  const appropriate = found.length === 0 ? 'not-appropriate' : 'appropriate';
-
+  const rating = cptReasons[cpt].getRating(reasons);
   return [
     {
       url: 'http://fhir.org/argonaut/Extension/pama-rating',
       valueCodeableConcept: {
         coding: [{
           system: 'http://fhir.org/argonaut/CodeSystem/pama-rating',
-          code: appropriate,
+          code: rating,
         }],
       },
     },
