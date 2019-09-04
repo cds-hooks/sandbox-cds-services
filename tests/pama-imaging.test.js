@@ -9,15 +9,13 @@ const stub = require('./stubs/pama-imaging-stub');
 const request = require('supertest');
 
 describe('PAMA Imaging Service Endpoint', () => {
-  test('It returns an "not-appropriate" rating, given "spine CT for low back pain"', async (done) => {
-    const input = stub.scenario1request;
+  async function confirm(rating, input, done) {
     const response = await request(app)
       .post('/cds-services/pama-imaging')
       .send(input)
       .type('json');
 
     expect(response.status).toEqual(200);
-    console.log(response.body);
     const { systemActions } = response.body.extension;
 
     expect(systemActions).toHaveLength(1);
@@ -31,13 +29,25 @@ describe('PAMA Imaging Service Endpoint', () => {
     expect(ratings).toHaveLength(1);
     expect(ratings[0]).toEqual({
       system: 'http://fhir.org/argonaut/CodeSystem/pama-rating',
-      code: 'not-appropriate',
+      code: rating,
     });
 
     done();
+  }
+
+  test('It returns "not-appropriate", given "spine CT for low back pain"', (done) => {
+    confirm('not-appropriate', stub.s1r1, done);
   });
 
-  test('It returns an "appropriate" rating, given "Abdominal MRI for pancreatitis with kidney disease"', (done) => {
+  test('It returns "appropriate", given "CT head for multiple reasons"', (done) => {
+    confirm('appropriate', stub.s1r2, done);
+  });
+
+  test('It returns "no-guidelines-apply", given "MRI for a toothache"', (done) => {
+    confirm('no-guidelines-apply', stub.s1r3, done);
+  });
+
+  test('It returns "appropriate", given "Abdominal MRI for pancreatitis with kidney disease"', (done) => {
     done();
   });
 
