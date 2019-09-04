@@ -33,9 +33,10 @@ class Reasons {
 }
 
 const cptReasons = {
-  '72133': new Reasons([], [['279039007']]),
-  '70450': new Reasons([['25064002', '423341008 ']], []),
+  '70450': new Reasons([['25064002', '423341008']], []),
   '70544': new Reasons([], []),
+  '72133': new Reasons([], [['279039007']]),
+  '75561': new Reasons([['13213009']], []),
 };
 
 function findCodes(codes, systemName) {
