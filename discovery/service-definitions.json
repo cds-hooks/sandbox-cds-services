@@ -1,5 +1,17 @@
 [
   {
+    "id": "cms-price-check",
+    "title": "CMS Pricing Service",
+    "description": "Determine if an authored prescription has a cheaper alternative to switch to and display pricing",
+    "hook": "order-select"
+  },
+  {
+    "id": "pama-imaging",
+    "title": "Pama Imaging Connectathon 2019 Scenarios",
+    "description": "Produce an appropriateness score according to scenario inputs.",
+    "hook": "order-select"
+  },
+  {
     "id": "patient-greeting",
     "title": "Patient greeting",
     "description": "Display which patient the user is currently working with",
@@ -7,11 +19,5 @@
     "prefetch": {
       "patient": "Patient/{{context.patientId}}"
     }
-  },
-  {
-    "id": "cms-price-check",
-    "title": "CMS Pricing Service",
-    "description": "Determine if an authored prescription has a cheaper alternative to switch to and display pricing",
-    "hook": "order-select"
   }
 ]
