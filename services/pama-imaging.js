@@ -109,11 +109,15 @@ function getSystemActions(entries, selections) {
   ));
 }
 
+function getCards() {
+  return [];
+}
+
 router.post('/', (request, response) => {
   const entries = request.body.context.draftOrders.entry;
   const { selections } = request.body.context;
   response.json({
-    cards: [],
+    cards: getCards(),
     extension: {
       systemActions: getSystemActions(entries, selections),
     },
