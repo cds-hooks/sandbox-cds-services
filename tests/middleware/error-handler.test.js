@@ -28,13 +28,12 @@ describe('Error Handler', () => {
     errorHandler(err, null, res, null);
 
     expect(res.code).toBe(404);
-    expect(res.data).toBe('Not Found');
   });
 
   test('returns a 500 if no error status has been specified', () => {
     errorHandler(new Error(), null, res, null);
 
     expect(res.code).toBe(500);
-    expect(res.data).toBe('Internal Server Error');
+    expect(res.data.length > 50);
   });
 });
