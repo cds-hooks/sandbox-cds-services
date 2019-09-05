@@ -11,8 +11,14 @@ const CPT = 'http://www.ama-assn.org/go/cpt';
 
 class Reasons {
   static covers(subset, set) {
-    if (subset.size > set.size) return false;
-    for (const member of subset) if (!set.has(member)) return false;
+    if (subset.size > set.size) {
+      return false;
+    }
+    for (const member of subset) {
+      if (!set.has(member)) {
+        return false;
+      }
+    }
     return true;
   }
 
@@ -33,6 +39,7 @@ class Reasons {
 }
 
 const cptReasons = {
+  '1234': new Reasons([['1']], [['2', '3']]), // testing only
   '70450': new Reasons([['25064002', '423341008']], []),
   '70544': new Reasons([], []),
   '72133': new Reasons([], [['279039007']]),
@@ -49,7 +56,6 @@ function findCodes(codes, systemName) {
 
 function getRatings(resource) {
   const cpt = findCodes([resource.code], CPT);
-  if (!cpt.length) return [];
   if (!(cpt[0] in cptReasons)) return [];
   const reasons = new Set(findCodes(resource.reasonCode, SNOMED));
   const rating = cptReasons[cpt[0]].getRating(reasons);

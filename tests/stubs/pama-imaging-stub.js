@@ -1,6 +1,6 @@
 const uuid = require('uuid');
 
-function getReasons(reasons) {
+function makeReasons(reasons) {
   return reasons.map(r => (
     {
       coding: r.reasons.map(x => (
@@ -14,7 +14,7 @@ function getReasons(reasons) {
   ));
 }
 
-function getResources(
+function makeResources(
   bundle, patientId,
   intent = 'plan',
   resourceType = 'ServiceRequest',
@@ -37,13 +37,13 @@ function getResources(
         subject: {
           reference: `Patient/${patientId}`,
         },
-        reasonCode: getReasons(x.snomed),
+        reasonCode: makeReasons(x.snomed),
       },
     }
   ));
 }
 
-function getRequest(
+function makeRequest(
   bundle,
   encounterId = '89284',
   fhirServer = 'http://hooks.smarthealthit.org',
@@ -62,14 +62,14 @@ function getRequest(
       selections: [`ServiceRequest/example-${patientId}`],
       draftOrders: {
         resourceType: 'Bundle',
-        entry: getResources(bundle, patientId),
+        entry: makeResources(bundle, patientId),
       },
     },
   };
 }
 
 module.exports = {
-  s1r1: getRequest([{
+  s1r1: makeRequest([{
     code: '72133',
     text: 'Lumbar spine CT',
     snomed: [{
@@ -79,7 +79,7 @@ module.exports = {
     }],
   }]),
 
-  s1r2: getRequest([{
+  s1r2: makeRequest([{
     code: '70450',
     text: 'CT head without contrast',
     snomed: [{
@@ -90,7 +90,7 @@ module.exports = {
     }],
   }]),
 
-  s1r3: getRequest([{
+  s1r3: makeRequest([{
     code: '70544',
     text: 'Magnetic resonance angiography, head',
     snomed: [{
@@ -98,5 +98,29 @@ module.exports = {
         { code: '27355003', display: 'Toothache (finding)' },
       ],
     }],
+  }]),
+
+  dummy1: makeRequest([{
+    code: '1234',
+    text: 'Procedure with no reason given',
+    snomed: [],
+  }]),
+
+  dummy2: makeRequest([{
+    code: '1234',
+    text: 'Procedure with more reasons than needed',
+    snomed: [{
+      reasons: [
+        { code: '4', display: 'Dummy reason 2' },
+        { code: '5', display: 'Dummy reason 3' },
+        { code: '6', display: 'Dummy reason 4' },
+      ],
+    }],
+  }]),
+
+  dummy3: makeRequest([{
+    code: '',
+    text: '',
+    snomed: [],
   }]),
 };
