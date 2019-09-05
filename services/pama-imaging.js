@@ -1,6 +1,7 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable quote-props */
 const express = require('express');
+const flat = require('array.prototype.flat');
 const uuid = require('uuid');
 
 const router = express.Router();
@@ -8,6 +9,7 @@ const router = express.Router();
 const SNOMED = 'http://snomed.info/sct';
 const CPT = 'http://www.ama-assn.org/go/cpt';
 
+flat.shim();
 
 class Reasons {
   static covers(subset, set) {
