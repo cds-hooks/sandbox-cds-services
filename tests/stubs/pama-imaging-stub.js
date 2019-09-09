@@ -103,9 +103,11 @@ module.exports = {
   s2r1: makeRequest([{
     code: '75561',
     text: 'Cardiac MRI',
-    snomed: [
-      { code: '13213009', display: 'Congenital heart disease' },
-    ],
+    snomed: [{
+      reasons: [
+        { code: '13213009', display: 'Congenital heart disease' },
+      ],
+    }],
   }]),
 
   dummy1: makeRequest([{
