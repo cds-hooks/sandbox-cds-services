@@ -24,16 +24,16 @@ class Reasons {
     return true;
   }
 
-  constructor(yes, no) {
-    this.yes = yes.map(x => new Set(x));
-    this.no = no.map(x => new Set(x));
+  constructor(appropriate, notAppropriate) {
+    this.appropriate = appropriate.map(x => new Set(x));
+    this.notAppropriate = notAppropriate.map(x => new Set(x));
   }
 
   getRating(reasons) {
-    if (this.yes.filter(s => Reasons.covers(s, reasons)).length) {
+    if (this.appropriate.filter(s => Reasons.covers(s, reasons)).length) {
       return 'appropriate';
     }
-    if (this.no.filter(s => Reasons.covers(s, reasons)).length) {
+    if (this.notAppropriate.filter(s => Reasons.covers(s, reasons)).length) {
       return 'not-appropriate';
     }
     return 'no-guidelines-apply';
@@ -41,12 +41,20 @@ class Reasons {
 }
 
 const cptReasons = {
-  '1234': new Reasons([['1']], [['2', '3']]), // testing only
+  '1234': new Reasons([['1']], [['2', '3']]),
   '70450': new Reasons([['25064002', '423341008']], []),
   '70544': new Reasons([], []),
+  '71275': new Reasons([], [['13213009']]),
   '72133': new Reasons([], [['279039007']]),
   '75561': new Reasons([['13213009']], []),
 };
+
+const recommendable = new Map(
+  Object.entries(cptReasons)
+    .filter(x => x[1].appropriate.length > 0)
+    .map(x => [x[0], ...x[1].appropriate])
+    .filter(x => x[1].size === 1)
+    .map(x => [[...x[1].values()][0], x[0]]));
 
 function findCodes(codes, systemName) {
   return codes
