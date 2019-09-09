@@ -110,6 +110,16 @@ module.exports = {
     }],
   }]),
 
+  s2r2: makeRequest([{
+    code: '70544',
+    text: 'Magnetic resonance angiography, head',
+    snomed: [{
+      reasons: [
+        { code: '13213009', display: 'Congenital heart disease' },
+      ],
+    }],
+  }]),
+
   dummy1: makeRequest([{
     code: '1234',
     text: 'Procedure with no reason given',
