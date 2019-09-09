@@ -63,6 +63,28 @@ describe('PAMA Imaging Service Endpoint', () => {
     confirm('no-guidelines-apply', stub.s1r3, done);
   });
 
+  test('It returns no cards when recommendations are already applied', async (done) => {
+    const response = await request(app)
+      .post('/cds-services/pama-imaging')
+      .send(stub.s2r1)
+      .type('json');
+    expect(response.status).toEqual(200);
+    console.log(response.body);
+    // TODO: confirm that no cards are included (the request already has them present).
+    done();
+  });
+
+  test('It returns cards when recommended actions are missing', async (done) => {
+    const response = await request(app)
+      .post('/cds-services/pama-imaging')
+      .send(stub.s2r2)
+      .type('json');
+    expect(response.status).toEqual(200);
+    console.log(response.body);
+    // TODO: confirm that cards are included as expected.
+    done();
+  });
+
   test('It returns "appropriate", given "Abdominal MRI for pancreatitis with kidney disease"', (done) => {
     done();
   });
