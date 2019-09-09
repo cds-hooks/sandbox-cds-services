@@ -49,12 +49,34 @@ const cptReasons = {
   '75561': new Reasons([['13213009']], []),
 };
 
-const recommendable = new Map(
-  Object.entries(cptReasons)
-    .filter(x => x[1].appropriate.length > 0)
-    .map(x => [x[0], ...x[1].appropriate])
-    .filter(x => x[1].size === 1)
-    .map(x => [[...x[1].values()][0], x[0]]));
+const recommendations = {
+  '13213009': [{
+    indicator: 'info',
+    source: {
+      label: 'Dx App Suite',
+    },
+    summary: 'ACC recommends cardiac MRI',
+    suggestions: {
+      label: 'Choose MRI',
+      actions: [
+        {
+          type: 'update',
+          description: 'Update order to MRI',
+          resource: { // Placeholder!  Replace this with the actual resource.
+            code: {
+              coding: [
+                {
+                  system: 'http://www.ama-assn.org/go/cpt',
+                  code: '75561',
+                },
+              ],
+            },
+          },
+        },
+      ],
+    },
+  }],
+};
 
 function findCodes(codes, systemName) {
   return codes
@@ -117,17 +139,48 @@ function getSystemActions(entries, selections) {
   ));
 }
 
-function getCards() {
+function getCards(entries, actions) {
+  const reasonCodes = new Set(entries
+    .map(x => x.resource.reasonCode)
+    .flat()
+    .map(x => x.coding.map(y => y.code))
+    .flat());
+  const cards = Object.entries(recommendations)
+    .filter(x => reasonCodes.has(x[0]))
+    .map(x => x[1])
+    .flat();
+//  if (cards.length === 0) return []; // XXX
+  const recommendedActions = new Set(cards
+    .map(x => x.suggestions.actions
+      .map(y => y.resource.code.coding
+        .map(z => z.code))
+      .flat())
+    .flat());
+  const selectedActions = new Set(entries
+    .map(x => x.resource.code)
+    .flat()
+    .map(x => x.coding)
+    .flat()
+    .map(x => x.code));
+  console.log(actions);
+  console.log(selectedActions);
+  console.log(recommendedActions);
+  console.log(JSON.stringify(cards, null, 2));
+//  console.log(JSON.stringify(entries, null, 2));
+//  console.log(JSON.stringify(recommendations, null, 2));
+//  console.log(reasonCodes);
+  // TODO: insert the resources into the cards
   return [];
 }
 
 router.post('/', (request, response) => {
   const entries = request.body.context.draftOrders.entry;
   const { selections } = request.body.context;
+  const actions = getSystemActions(entries, selections);
   response.json({
-    cards: getCards(),
+    cards: getCards(entries, actions),
     extension: {
-      systemActions: getSystemActions(entries, selections),
+      systemActions: actions,
     },
   });
 });
