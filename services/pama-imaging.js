@@ -56,7 +56,7 @@ const recommendations = {
       label: 'Dx App Suite',
     },
     summary: 'ACC recommends cardiac MRI',
-    suggestions: {
+    suggestions: [{
       label: 'Choose MRI',
       actions: [
         {
@@ -74,7 +74,7 @@ const recommendations = {
           },
         },
       ],
-    },
+    }],
   }],
 };
 
@@ -139,38 +139,36 @@ function getSystemActions(entries, selections) {
   ));
 }
 
-function getCards(entries, actions) {
-  const reasonCodes = new Set(entries
-    .map(x => x.resource.reasonCode)
-    .flat()
-    .map(x => x.coding.map(y => y.code))
-    .flat());
-  const cards = Object.entries(recommendations)
-    .filter(x => reasonCodes.has(x[0]))
-    .map(x => x[1])
-    .flat();
-//  if (cards.length === 0) return []; // XXX
-  const recommendedActions = new Set(cards
-    .map(x => x.suggestions.actions
+function getCards(entries, proposedActions) {
+  const proposedReasons = new Set(entries
+    .map(x => x.resource.reasonCode).flat()
+    .map(x => x.coding.map(y => y.code)).flat());
+  const matchingCards = Object.entries(recommendations)
+    .filter(x => proposedReasons.has(x[0]))
+    .map(x => x[1]).flat();
+  const recommendedActions = new Set(matchingCards
+    .map(x => x.suggestions).flat()
+    .map(x => x.actions
       .map(y => y.resource.code.coding
-        .map(z => z.code))
-      .flat())
-    .flat());
+        .map(z => z.code)).flat()).flat());
   const selectedActions = new Set(entries
-    .map(x => x.resource.code)
-    .flat()
-    .map(x => x.coding)
-    .flat()
+    .map(x => x.resource.code).flat()
+    .map(x => x.coding).flat()
     .map(x => x.code));
-  console.log(actions);
-  console.log(selectedActions);
-  console.log(recommendedActions);
-  console.log(JSON.stringify(cards, null, 2));
-//  console.log(JSON.stringify(entries, null, 2));
-//  console.log(JSON.stringify(recommendations, null, 2));
-//  console.log(reasonCodes);
-  // TODO: insert the resources into the cards
-  return [];
+  if (Reasons.covers(recommendedActions, selectedActions)) {
+    console.log('No cards needed, recommendations are already covered.'); // XXX
+    return [];
+  }
+  return matchingCards.slice().map(card => ({
+    ...card,
+    suggestions: card.suggestions.map(suggestion => ({
+      ...suggestion,
+      actions: suggestion.actions.map(action => ({
+        ...action,
+        resource: proposedActions[0].resource,
+      })),
+    })),
+  }));
 }
 
 router.post('/', (request, response) => {
