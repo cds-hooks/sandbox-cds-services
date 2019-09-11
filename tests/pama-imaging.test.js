@@ -79,9 +79,17 @@ describe('PAMA Imaging Service Endpoint', () => {
       .send(stub.s2r2)
       .type('json');
     expect(response.status).toEqual(200);
-    expect(response.body.cards).toHaveLength(1);
-    // TODO: ensure the resource is inside the card
-    // TODO: ensure the card has the right description text
+    const { cards } = response.body;
+    expect(cards).toHaveLength(1);
+    expect(cards[0].suggestions).toHaveLength(1);
+    expect(cards[0].indicator).toBe('info');
+    expect(cards[0].source.label).toBe('Dx App Suite');
+    expect(cards[0].summary).toBe('ACC recommends cardiac MRI');
+    expect(cards[0].suggestions[0].actions).toHaveLength(1);
+    const action = cards[0].suggestions[0].actions[0];
+    expect(action.type).toBe('update');
+    expect(action.description).toBe('Update order to MRI');
+    expect(action.resource.code.text).toBe('Magnetic resonance angiography, head');
     done();
   });
 });
