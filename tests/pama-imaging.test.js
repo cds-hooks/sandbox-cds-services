@@ -63,7 +63,7 @@ describe('PAMA Imaging Service Endpoint', () => {
     confirm('no-guidelines-apply', stub.s1r3, done);
   });
 
-  test('It returns no cards when recommendations meet guidelines', async (done) => {
+  test('It returns no cards when draft orders meet guidelines', async (done) => {
     const response = await request(app)
       .post('/cds-services/pama-imaging')
       .send(stub.s2r1)
