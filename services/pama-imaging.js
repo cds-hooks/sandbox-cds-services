@@ -1,15 +1,30 @@
 /* eslint-disable no-restricted-syntax */
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable quote-props */
 const express = require('express');
-const flat = require('array.prototype.flat');
+const flatMap = require('array.prototype.flatmap');
 const uuid = require('uuid');
 
 const router = express.Router();
 
-const SNOMED = 'http://snomed.info/sct';
-const CPT = 'http://www.ama-assn.org/go/cpt';
+flatMap.shim();
 
-flat.shim();
+const CPT = {
+  _URL: 'http://www.ama-assn.org/go/cpt',
+  CARDIAC_MRI: '75561',
+  CTA_WITH_CONTRAST: '71275',
+  CT_HEAD_NO_CONTRAST: '70450',
+  LUMBAR_SPINE_CT: '72133',
+  MRA_HEAD: '70544',
+};
+
+const SNOMED = {
+  _URL: 'http://snomed.info/sct',
+  CONGENITAL_HEART_DISEASE: '13213009',
+  HEADACHE: '25064002',
+  LOW_BACK_PAIN: '279039007',
+  OPTIC_DISC_EDEMA: '423341008',
+};
 
 class Reasons {
   static covers(subset, set) {
@@ -42,15 +57,15 @@ class Reasons {
 
 const cptReasons = {
   '1234': new Reasons([['1']], [['2', '3']]),
-  '70450': new Reasons([['25064002', '423341008']], []),
-  '70544': new Reasons([], []),
-  '71275': new Reasons([], [['13213009']]),
-  '72133': new Reasons([], [['279039007']]),
-  '75561': new Reasons([['13213009']], []),
+  [CPT.CT_HEAD_NO_CONTRAST]: new Reasons([[SNOMED.HEADACHE, SNOMED.OPTIC_DISC_EDEMA]], []),
+  [CPT.MRA_HEAD]: new Reasons([], []),
+  [CPT.CTA_WITH_CONTRAST]: new Reasons([], [[SNOMED.CONGENITAL_HEART_DISEASE]]),
+  [CPT.LUMBAR_SPINE_CT]: new Reasons([], [[SNOMED.LOW_BACK_PAIN]]),
+  [CPT.CARDIAC_MRI]: new Reasons([[SNOMED.CONGENITAL_HEART_DISEASE]], []),
 };
 
 const recommendations = {
-  '13213009': [{
+  [SNOMED.CONGENITAL_HEART_DISEASE]: [{
     indicator: 'info',
     source: {
       label: 'Dx App Suite',
@@ -66,8 +81,8 @@ const recommendations = {
             code: {
               coding: [
                 {
-                  system: 'http://www.ama-assn.org/go/cpt',
-                  code: '75561',
+                  system: CPT._URL,
+                  code: CPT.CARDIAC_MRI,
                 },
               ],
             },
@@ -80,16 +95,15 @@ const recommendations = {
 
 function findCodes(codes, systemName) {
   return codes
-    .map(c => c.coding
+    .flatMap(c => c.coding
       .filter(x => x.system === systemName)
-      .map(x => x.code))
-    .flat();
+      .map(x => x.code));
 }
 
 function getRatings(resource) {
-  const cpt = findCodes([resource.code], CPT);
+  const cpt = findCodes([resource.code], CPT._URL);
   if (!(cpt[0] in cptReasons)) return [];
-  const reasons = new Set(findCodes(resource.reasonCode, SNOMED));
+  const reasons = new Set(findCodes(resource.reasonCode, SNOMED._URL));
   const rating = cptReasons[cpt[0]].getRating(reasons);
   return [
     {
@@ -127,8 +141,8 @@ const findResources = (entries, selections) =>
         .filter(r => r.resourceType === resourceType && r.id === resourceId)[0]);
 
 
-function getSystemActions(entries, selections) {
-  return findResources(entries, selections).map(r => (
+function getSystemActions(resources) {
+  return resources.map(r => (
     {
       resource: {
         ...r,
@@ -139,33 +153,34 @@ function getSystemActions(entries, selections) {
   ));
 }
 
-function getCards(entries, proposedActions) {
-  const proposedReasons = new Set(entries
-    .map(x => x.resource.reasonCode).flat()
-    .map(x => x.coding.map(y => y.code)).flat());
+function makeCards(resources) {
+  const proposedReasons = new Set(resources
+    .flatMap(x => x.reasonCode)
+    .flatMap(x => x.coding)
+    .flatMap(x => x.code));
   const matchingCards = Object.entries(recommendations)
     .filter(x => proposedReasons.has(x[0]))
-    .map(x => x[1]).flat();
-  const recommendedActions = new Set(matchingCards
-    .map(x => x.suggestions).flat()
-    .map(x => x.actions
-      .map(y => y.resource.code.coding
-        .map(z => z.code)).flat()).flat());
-  const selectedActions = new Set(entries
-    .map(x => x.resource.code).flat()
-    .map(x => x.coding).flat()
+    .flatMap(x => x[1]);
+
+  // Eliminate returning cards if the proposed orders already meet guidelines.
+  const guidelineActions = new Set(matchingCards
+    .flatMap(x => x.suggestions)
+    .flatMap(x => x.actions)
+    .flatMap(y => y.resource.code.coding)
+    .map(z => z.code));
+  const selectedActions = new Set(resources
+    .flatMap(x => x.code)
+    .flatMap(x => x.coding)
     .map(x => x.code));
-  if (Reasons.covers(recommendedActions, selectedActions)) {
-    console.log('No cards needed, recommendations are already covered.'); // XXX
-    return [];
-  }
+  if (Reasons.covers(guidelineActions, selectedActions)) return [];
+
   return matchingCards.slice().map(card => ({
     ...card,
     suggestions: card.suggestions.map(suggestion => ({
       ...suggestion,
       actions: suggestion.actions.map(action => ({
         ...action,
-        resource: proposedActions[0].resource,
+        resource: resources[0],
       })),
     })),
   }));
@@ -174,11 +189,11 @@ function getCards(entries, proposedActions) {
 router.post('/', (request, response) => {
   const entries = request.body.context.draftOrders.entry;
   const { selections } = request.body.context;
-  const actions = getSystemActions(entries, selections);
+  const resources = findResources(entries, selections);
   response.json({
-    cards: getCards(entries, actions),
+    cards: makeCards(resources),
     extension: {
-      systemActions: actions,
+      systemActions: getSystemActions(resources),
     },
   });
 });
