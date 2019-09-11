@@ -120,7 +120,15 @@ module.exports = {
     }],
   }]),
 
-  dummy1: makeRequest([{
+  s2r3: makeRequest([{
+    snomed: [{
+      reasons: [
+        { code: '13213009', display: 'Congenital heart disease' },
+      ],
+    }],
+  }]),
+
+ dummy1: makeRequest([{
     code: '1234',
     text: 'Procedure with no reason given',
     snomed: [],

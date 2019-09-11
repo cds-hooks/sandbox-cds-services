@@ -86,10 +86,37 @@ describe('PAMA Imaging Service Endpoint', () => {
     expect(cards[0].source.label).toBe('Dx App Suite');
     expect(cards[0].summary).toBe('ACC recommends cardiac MRI');
     expect(cards[0].suggestions[0].actions).toHaveLength(1);
+    expect(cards[0].suggestions[0].actions[0].resource.code.coding[0].code).toBe('70544');
+
     const action = cards[0].suggestions[0].actions[0];
     expect(action.type).toBe('update');
     expect(action.description).toBe('Update order to MRI');
     expect(action.resource.code.text).toBe('Magnetic resonance angiography, head');
     done();
   });
+
+  test('It returns cards when draft orders do not meet guidelines, without a ServiceRequest.code supplied', async (done) => {
+    const response = await request(app)
+      .post('/cds-services/pama-imaging')
+      .send(stub.s2r3)
+      .type('json');
+
+    // TODO: extract these and above (DRY)
+    expect(response.status).toEqual(200);
+    const { cards } = response.body;
+    expect(cards).toHaveLength(1);
+    expect(cards[0].suggestions).toHaveLength(1);
+    expect(cards[0].indicator).toBe('info');
+    expect(cards[0].source.label).toBe('Dx App Suite');
+    expect(cards[0].summary).toBe('ACC recommends cardiac MRI');
+    expect(cards[0].suggestions[0].actions).toHaveLength(1);
+    expect(cards[0].suggestions[0].actions[0].resource.code.coding[0].code).toBe('70544');
+
+    const action = cards[0].suggestions[0].actions[0];
+    expect(action.type).toBe('update');
+    expect(action.description).toBe('Update order to MRI');
+    expect(action.resource.code.text).toBe('Magnetic resonance angiography, head');
+    done();
+  });
+
 });
