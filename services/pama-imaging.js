@@ -2,6 +2,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable quote-props */
 const express = require('express');
+const fhirpath = require('fhirpath');
 const flatMap = require('array.prototype.flatmap');
 const uuid = require('uuid');
 
@@ -10,16 +11,16 @@ const router = express.Router();
 flatMap.shim();
 
 const CPT = {
-  _URL: 'http://www.ama-assn.org/go/cpt',
+  _FHIR_CODING_SYSTEM: 'http://www.ama-assn.org/go/cpt',
   CARDIAC_MRI: '75561',
-  CTA_WITH_CONTRAST: '71275',
   CT_HEAD_NO_CONTRAST: '70450',
+  CTA_WITH_CONTRAST: '71275',
   LUMBAR_SPINE_CT: '72133',
   MRA_HEAD: '70544',
 };
 
 const SNOMED = {
-  _URL: 'http://snomed.info/sct',
+  _FHIR_CODING_SYSTEM: 'http://snomed.info/sct',
   CONGENITAL_HEART_DISEASE: '13213009',
   HEADACHE: '25064002',
   LOW_BACK_PAIN: '279039007',
@@ -64,7 +65,7 @@ const cptReasons = {
   [CPT.CARDIAC_MRI]: new Reasons([[SNOMED.CONGENITAL_HEART_DISEASE]], []),
 };
 
-const recommendations = {
+const CARD_TEMPLATES = {
   [SNOMED.CONGENITAL_HEART_DISEASE]: [{
     indicator: 'info',
     source: {
@@ -77,16 +78,7 @@ const recommendations = {
         {
           type: 'update',
           description: 'Update order to MRI',
-          resource: { // Placeholder!  Replace this with the actual resource.
-            code: {
-              coding: [
-                {
-                  system: CPT._URL,
-                  code: CPT.CARDIAC_MRI,
-                },
-              ],
-            },
-          },
+          resource: { code: { coding: [{ code: CPT.CARDIAC_MRI }] } }, // Placeholder resource.
         },
       ],
     }],
@@ -101,9 +93,9 @@ function findCodes(codes, systemName) {
 }
 
 function getRatings(resource) {
-  const cpt = findCodes([resource.code], CPT._URL);
+  const cpt = findCodes([resource.code], CPT._FHIR_CODING_SYSTEM);
   if (!(cpt[0] in cptReasons)) return [];
-  const reasons = new Set(findCodes(resource.reasonCode, SNOMED._URL));
+  const reasons = new Set(findCodes(resource.reasonCode, SNOMED._FHIR_CODING_SYSTEM));
   const rating = cptReasons[cpt[0]].getRating(reasons);
   return [
     {
@@ -153,25 +145,17 @@ function getSystemActions(resources) {
   ));
 }
 
+const findSet = (json, path) => new Set(fhirpath.evaluate(json, path));
+
 function makeCards(resources) {
-  const proposedReasons = new Set(resources
-    .flatMap(x => x.reasonCode)
-    .flatMap(x => x.coding)
-    .flatMap(x => x.code));
-  const matchingCards = Object.entries(recommendations)
+  const proposedReasons = findSet(resources, 'reasonCode.coding.code');
+  const matchingCards = Object.entries(CARD_TEMPLATES)
     .filter(x => proposedReasons.has(x[0]))
     .flatMap(x => x[1]);
 
   // Eliminate returning cards if the proposed orders already meet guidelines.
-  const guidelineActions = new Set(matchingCards
-    .flatMap(x => x.suggestions)
-    .flatMap(x => x.actions)
-    .flatMap(y => y.resource.code.coding)
-    .map(z => z.code));
-  const selectedActions = new Set(resources
-    .flatMap(x => x.code)
-    .flatMap(x => x.coding)
-    .map(x => x.code));
+  const guidelineActions = findSet(matchingCards, 'suggestions.actions.resource.code.coding.code');
+  const selectedActions = findSet(resources, 'code.coding.code');
   if (Reasons.covers(guidelineActions, selectedActions)) return [];
 
   return matchingCards.slice().map(card => ({
