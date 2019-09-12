@@ -20,10 +20,11 @@
   },
   "homepage": "https://github.com/cds-hooks/sandbox-cds-services#readme",
   "dependencies": {
-    "array.prototype.flat": "^1.2.1",
+    "array.prototype.flatmap": "^1.2.1",
     "axios": "^0.18.0",
     "body-parser": "^1.18.3",
     "express": "^4.16.3",
+    "fhirpath": "^0.17.0",
     "uuid": "^3.2.1"
   },
   "devDependencies": {

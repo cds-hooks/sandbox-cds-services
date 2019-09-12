@@ -1,15 +1,31 @@
 /* eslint-disable no-restricted-syntax */
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable quote-props */
 const express = require('express');
-const flat = require('array.prototype.flat');
+const fhirpath = require('fhirpath');
+const flatMap = require('array.prototype.flatmap');
 const uuid = require('uuid');
 
 const router = express.Router();
 
-const SNOMED = 'http://snomed.info/sct';
-const CPT = 'http://www.ama-assn.org/go/cpt';
+flatMap.shim();
 
-flat.shim();
+const CPT = {
+  _FHIR_CODING_SYSTEM: 'http://www.ama-assn.org/go/cpt',
+  CARDIAC_MRI: '75561',
+  CT_HEAD_NO_CONTRAST: '70450',
+  CTA_WITH_CONTRAST: '71275',
+  LUMBAR_SPINE_CT: '72133',
+  MRA_HEAD: '70544',
+};
+
+const SNOMED = {
+  _FHIR_CODING_SYSTEM: 'http://snomed.info/sct',
+  CONGENITAL_HEART_DISEASE: '13213009',
+  HEADACHE: '25064002',
+  LOW_BACK_PAIN: '279039007',
+  OPTIC_DISC_EDEMA: '423341008',
+};
 
 class Reasons {
   static covers(subset, set) {
@@ -24,16 +40,16 @@ class Reasons {
     return true;
   }
 
-  constructor(yes, no) {
-    this.yes = yes.map(x => new Set(x));
-    this.no = no.map(x => new Set(x));
+  constructor(appropriate, notAppropriate) {
+    this.appropriate = appropriate.map(x => new Set(x));
+    this.notAppropriate = notAppropriate.map(x => new Set(x));
   }
 
   getRating(reasons) {
-    if (this.yes.filter(s => Reasons.covers(s, reasons)).length) {
+    if (this.appropriate.filter(s => Reasons.covers(s, reasons)).length) {
       return 'appropriate';
     }
-    if (this.no.filter(s => Reasons.covers(s, reasons)).length) {
+    if (this.notAppropriate.filter(s => Reasons.covers(s, reasons)).length) {
       return 'not-appropriate';
     }
     return 'no-guidelines-apply';
@@ -41,25 +57,63 @@ class Reasons {
 }
 
 const cptReasons = {
-  '1234': new Reasons([['1']], [['2', '3']]), // testing only
-  '70450': new Reasons([['25064002', '423341008']], []),
-  '70544': new Reasons([], []),
-  '72133': new Reasons([], [['279039007']]),
-  '75561': new Reasons([['13213009']], []),
+  '1234': new Reasons([['1']], [['2', '3']]),
+  [CPT.CT_HEAD_NO_CONTRAST]: new Reasons([[SNOMED.HEADACHE, SNOMED.OPTIC_DISC_EDEMA]], []),
+  [CPT.MRA_HEAD]: new Reasons([], []),
+  [CPT.CTA_WITH_CONTRAST]: new Reasons([], [[SNOMED.CONGENITAL_HEART_DISEASE]]),
+  [CPT.LUMBAR_SPINE_CT]: new Reasons([], [[SNOMED.LOW_BACK_PAIN]]),
+  [CPT.CARDIAC_MRI]: new Reasons([[SNOMED.CONGENITAL_HEART_DISEASE]], []),
+};
+
+const CARD_TEMPLATES = {
+  [SNOMED.CONGENITAL_HEART_DISEASE]: [{
+    indicator: 'info',
+    links: [
+      {
+        label: 'SMART PAMA Demo App',
+        url: 'https://cds-hooks.github.io/pama-demo-app/',
+        type: 'smart',
+        appContext: { session: 3456356, settings: { module: 4235 } },
+      },
+    ],
+    source: {
+      label: 'Dx App Suite',
+    },
+    summary: 'ACC recommends cardiac MRI',
+    suggestions: [{
+      label: 'Choose MRI',
+      actions: [
+        {
+          type: 'update',
+          description: 'Update order to MRI',
+          resource: { // Placeholder resource.
+            code: { coding: [{ code: CPT.CARDIAC_MRI, system: CPT._FHIR_CODING_SYSTEM }] },
+            reasonCode: [{
+              coding: [
+                {
+                  code: SNOMED.CONGENITAL_HEART_DISEASE,
+                  system: SNOMED._FHIR_CODING_SYSTEM,
+                },
+              ],
+            }],
+          },
+        },
+      ],
+    }],
+  }],
 };
 
 function findCodes(codes, systemName) {
   return codes
-    .map(c => c.coding
+    .flatMap(c => c.coding
       .filter(x => x.system === systemName)
-      .map(x => x.code))
-    .flat();
+      .map(x => x.code));
 }
 
 function getRatings(resource) {
-  const cpt = findCodes([resource.code], CPT);
+  const cpt = findCodes([resource.code], CPT._FHIR_CODING_SYSTEM);
   if (!(cpt[0] in cptReasons)) return [];
-  const reasons = new Set(findCodes(resource.reasonCode, SNOMED));
+  const reasons = new Set(findCodes(resource.reasonCode, SNOMED._FHIR_CODING_SYSTEM));
   const rating = cptReasons[cpt[0]].getRating(reasons);
   return [
     {
@@ -97,8 +151,8 @@ const findResources = (entries, selections) =>
         .filter(r => r.resourceType === resourceType && r.id === resourceId)[0]);
 
 
-function getSystemActions(entries, selections) {
-  return findResources(entries, selections).map(r => (
+function getSystemActions(resources) {
+  return resources.map(r => (
     {
       resource: {
         ...r,
@@ -109,13 +163,53 @@ function getSystemActions(entries, selections) {
   ));
 }
 
+const findSet = (json, path) => new Set(fhirpath.evaluate(json, path));
+
+/**
+ * Merge two resources, applying a PAMA rating to the combined resource.
+ *
+ * @param {*} source a resource, typically one that is selected but not finalized.
+ * @param {*} recommended a resource, one that contains attributes to apply to another.
+ */
+function mergeResources(source, recommended) {
+  const merged = { ...source, ...recommended };
+  return {
+    ...merged,
+    extension: [...merged.extension || [], ...getRatings(merged)],
+  };
+}
+
+function makeCards(resources) {
+  const proposedReasons = findSet(resources, 'reasonCode.coding.code');
+  const matchingCards = Object.entries(CARD_TEMPLATES)
+    .filter(x => proposedReasons.has(x[0]))
+    .flatMap(x => x[1]);
+
+  // Eliminate returning cards if the proposed orders already meet guidelines.
+  const guidelineActions = findSet(matchingCards, 'suggestions.actions.resource.code.coding.code');
+  const selectedActions = findSet(resources, 'code.coding.code');
+  if (Reasons.covers(guidelineActions, selectedActions)) return [];
+
+  return matchingCards.slice().map(card => ({
+    ...card,
+    suggestions: card.suggestions.map(suggestion => ({
+      ...suggestion,
+      actions: suggestion.actions.map(action => ({
+        ...action,
+        resource: mergeResources(resources[0], action.resource),
+      })),
+    })),
+  }));
+}
+
 router.post('/', (request, response) => {
   const entries = request.body.context.draftOrders.entry;
   const { selections } = request.body.context;
+  const resources = findResources(entries, selections);
   response.json({
-    cards: [],
+    cards: makeCards(resources),
     extension: {
-      systemActions: getSystemActions(entries, selections),
+      systemActions: getSystemActions(resources),
     },
   });
 });

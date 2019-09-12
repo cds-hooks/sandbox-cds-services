@@ -63,11 +63,59 @@ describe('PAMA Imaging Service Endpoint', () => {
     confirm('no-guidelines-apply', stub.s1r3, done);
   });
 
-  test('It returns "appropriate", given "Abdominal MRI for pancreatitis with kidney disease"', (done) => {
+  test('It returns no cards when draft orders meet guidelines', async (done) => {
+    const response = await request(app)
+      .post('/cds-services/pama-imaging')
+      .send(stub.s2r1)
+      .type('json');
+    expect(response.status).toEqual(200);
+    expect(response.body.cards).toHaveLength(0);
     done();
   });
 
-  test('It returns no rating, given "CT angiogram of chest for Dyspnea"', (done) => {
+  test('It returns cards when draft orders do not meet guidelines', async (done) => {
+    const response = await request(app)
+      .post('/cds-services/pama-imaging')
+      .send(stub.s2r2)
+      .type('json');
+    expect(response.status).toEqual(200);
+    const { cards } = response.body;
+    expect(cards).toHaveLength(1);
+    expect(cards[0].suggestions).toHaveLength(1);
+    expect(cards[0].indicator).toBe('info');
+    expect(cards[0].source.label).toBe('Dx App Suite');
+    expect(cards[0].summary).toBe('ACC recommends cardiac MRI');
+    expect(cards[0].suggestions[0].actions).toHaveLength(1);
+
+    const action = cards[0].suggestions[0].actions[0];
+    expect(action.resource.code.coding).toHaveLength(1);
+    expect(action.resource.code.coding[0].code).toBe('75561');
+    expect(action.type).toBe('update');
+    expect(action.description).toBe('Update order to MRI');
+    done();
+  });
+
+  test('It returns cards when draft orders do not meet guidelines, without a ServiceRequest.code supplied', async (done) => {
+    const response = await request(app)
+      .post('/cds-services/pama-imaging')
+      .send(stub.s2r3)
+      .type('json');
+
+    // TODO: extract these and above (DRY)
+    expect(response.status).toEqual(200);
+    const { cards } = response.body;
+    expect(cards).toHaveLength(1);
+    expect(cards[0].suggestions).toHaveLength(1);
+    expect(cards[0].indicator).toBe('info');
+    expect(cards[0].source.label).toBe('Dx App Suite');
+    expect(cards[0].summary).toBe('ACC recommends cardiac MRI');
+    expect(cards[0].suggestions[0].actions).toHaveLength(1);
+
+    const action = cards[0].suggestions[0].actions[0];
+    expect(action.resource.code.coding).toHaveLength(1);
+    expect(action.resource.code.coding[0].code).toBe('75561');
+    expect(action.type).toBe('update');
+    expect(action.description).toBe('Update order to MRI');
     done();
   });
 });
