@@ -128,7 +128,7 @@ module.exports = {
     }],
   }]),
 
- dummy1: makeRequest([{
+  dummy1: makeRequest([{
     code: '1234',
     text: 'Procedure with no reason given',
     snomed: [],
