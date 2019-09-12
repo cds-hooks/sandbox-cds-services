@@ -89,7 +89,12 @@ const CARD_TEMPLATES = {
           resource: { // Placeholder resource.
             code: { coding: [{ code: CPT.CARDIAC_MRI, system: CPT._FHIR_CODING_SYSTEM }] },
             reasonCode: [{
-              coding: [{ code: SNOMED.CONGENITAL_HEART_DISEASE, system: SNOMED._FHIR_CODING_SYSTEM }],
+              coding: [
+                {
+                  code: SNOMED.CONGENITAL_HEART_DISEASE,
+                  system: SNOMED._FHIR_CODING_SYSTEM,
+                },
+              ],
             }],
           },
         },
@@ -160,11 +165,17 @@ function getSystemActions(resources) {
 
 const findSet = (json, path) => new Set(fhirpath.evaluate(json, path));
 
-function applyTo(resource, action) {
-  const updated = { ...resource, ...action.resource };
+/**
+ * Merge two resources, applying a PAMA rating to the combined resource.
+ *
+ * @param {*} source a resource, typically one that is selected but not finalized.
+ * @param {*} recommended a resource, one that contains attributes to apply to another.
+ */
+function mergeResources(source, recommended) {
+  const merged = { ...source, ...recommended };
   return {
-    ...updated,
-    extension: [...updated.extension || [], ...getRatings(updated)],
+    ...merged,
+    extension: [...merged.extension || [], ...getRatings(merged)],
   };
 }
 
@@ -185,7 +196,7 @@ function makeCards(resources) {
       ...suggestion,
       actions: suggestion.actions.map(action => ({
         ...action,
-        resource: applyTo(resources[0], action),
+        resource: mergeResources(resources[0], action.resource),
       })),
     })),
   }));
