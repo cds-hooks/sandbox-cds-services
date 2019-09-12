@@ -68,6 +68,14 @@ const cptReasons = {
 const CARD_TEMPLATES = {
   [SNOMED.CONGENITAL_HEART_DISEASE]: [{
     indicator: 'info',
+    links: [
+      {
+        label: 'SMART PAMA Demo App',
+        url: 'https://cds-hooks.github.io/pama-demo-app/',
+        type: 'smart',
+        appContext: { session: 3456356, settings: { module: 4235 } },
+      },
+    ],
     source: {
       label: 'Dx App Suite',
     },
@@ -78,7 +86,12 @@ const CARD_TEMPLATES = {
         {
           type: 'update',
           description: 'Update order to MRI',
-          resource: { code: { coding: [{ code: CPT.CARDIAC_MRI }] } }, // Placeholder resource.
+          resource: { // Placeholder resource.
+            code: { coding: [{ code: CPT.CARDIAC_MRI, system: CPT._FHIR_CODING_SYSTEM }] },
+            reasonCode: [{
+              coding: [{ code: SNOMED.CONGENITAL_HEART_DISEASE, system: SNOMED._FHIR_CODING_SYSTEM }],
+            }],
+          },
         },
       ],
     }],
@@ -147,6 +160,14 @@ function getSystemActions(resources) {
 
 const findSet = (json, path) => new Set(fhirpath.evaluate(json, path));
 
+function applyTo(resource, action) {
+  const updated = { ...resource, ...action.resource };
+  return {
+    ...updated,
+    extension: [...updated.extension || [], ...getRatings(updated)],
+  };
+}
+
 function makeCards(resources) {
   const proposedReasons = findSet(resources, 'reasonCode.coding.code');
   const matchingCards = Object.entries(CARD_TEMPLATES)
@@ -164,7 +185,7 @@ function makeCards(resources) {
       ...suggestion,
       actions: suggestion.actions.map(action => ({
         ...action,
-        resource: resources[0],
+        resource: applyTo(resources[0], action),
       })),
     })),
   }));

@@ -86,12 +86,12 @@ describe('PAMA Imaging Service Endpoint', () => {
     expect(cards[0].source.label).toBe('Dx App Suite');
     expect(cards[0].summary).toBe('ACC recommends cardiac MRI');
     expect(cards[0].suggestions[0].actions).toHaveLength(1);
-    expect(cards[0].suggestions[0].actions[0].resource.code.coding[0].code).toBe('70544');
 
     const action = cards[0].suggestions[0].actions[0];
+    expect(action.resource.code.coding).toHaveLength(1);
+    expect(action.resource.code.coding[0].code).toBe('75561');
     expect(action.type).toBe('update');
     expect(action.description).toBe('Update order to MRI');
-    expect(action.resource.code.text).toBe('Magnetic resonance angiography, head');
     done();
   });
 
@@ -110,13 +110,12 @@ describe('PAMA Imaging Service Endpoint', () => {
     expect(cards[0].source.label).toBe('Dx App Suite');
     expect(cards[0].summary).toBe('ACC recommends cardiac MRI');
     expect(cards[0].suggestions[0].actions).toHaveLength(1);
-    expect(cards[0].suggestions[0].actions[0].resource.code.coding[0].code).toBe('70544');
 
     const action = cards[0].suggestions[0].actions[0];
+    expect(action.resource.code.coding).toHaveLength(1);
+    expect(action.resource.code.coding[0].code).toBe('75561');
     expect(action.type).toBe('update');
     expect(action.description).toBe('Update order to MRI');
-    expect(action.resource.code.text).toBe('Magnetic resonance angiography, head');
     done();
   });
-
 });
