@@ -87,12 +87,19 @@ const CARD_TEMPLATES = {
           type: 'update',
           description: 'Update order to MRI',
           resource: { // Placeholder resource.
-            code: { coding: [{ code: CPT.CARDIAC_MRI, system: CPT._FHIR_CODING_SYSTEM }] },
+            code: {
+              coding: [{
+                code: CPT.CARDIAC_MRI,
+                system: CPT._FHIR_CODING_SYSTEM,
+                display: 'Cardiac MRI',
+              }],
+            },
             reasonCode: [{
               coding: [
                 {
                   code: SNOMED.CONGENITAL_HEART_DISEASE,
                   system: SNOMED._FHIR_CODING_SYSTEM,
+                  display: 'Congenital heart disease',
                 },
               ],
             }],
