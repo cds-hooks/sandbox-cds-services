@@ -100,6 +100,17 @@ module.exports = {
     }],
   }]),
 
+  s1r4: makeRequest([{
+    code: '71275',
+    text: 'CT angiogram of chest with contras',
+    snomed: [{
+      reasons: [
+        { code: '267036007', display: 'Dyspnea' },
+      ],
+    }],
+  }]),
+
+
   s2r1: makeRequest([{
     code: '75561',
     text: 'Cardiac MRI',
