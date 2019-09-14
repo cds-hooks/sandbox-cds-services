@@ -25,6 +25,7 @@ const SNOMED = {
   HEADACHE: '25064002',
   LOW_BACK_PAIN: '279039007',
   OPTIC_DISC_EDEMA: '423341008',
+  TOOTHACHE: '27355003'
 };
 
 class Reasons {
@@ -58,12 +59,18 @@ class Reasons {
 
 const cptReasons = {
   '1234': new Reasons([['1']], [['2', '3']]),
+  'no-procedures-for': new Reasons([[SNOMED.TOOTHACHE]], []),
   [CPT.CT_HEAD_NO_CONTRAST]: new Reasons([[SNOMED.HEADACHE, SNOMED.OPTIC_DISC_EDEMA]], []),
   [CPT.MRA_HEAD]: new Reasons([], []),
   [CPT.CTA_WITH_CONTRAST]: new Reasons([], [[SNOMED.CONGENITAL_HEART_DISEASE]]),
   [CPT.LUMBAR_SPINE_CT]: new Reasons([], [[SNOMED.LOW_BACK_PAIN]]),
   [CPT.CARDIAC_MRI]: new Reasons([[SNOMED.CONGENITAL_HEART_DISEASE]], []),
 };
+
+const indicationsWithGuidelines = Object.values(cptReasons)
+  .flatMap(x=>x.appropriate)
+  .filter(x => x.size === 1)
+  .map(s => Array.from(s)[0])
 
 const CARD_TEMPLATES = {
   [SNOMED.CONGENITAL_HEART_DISEASE]: [{
@@ -80,12 +87,19 @@ const CARD_TEMPLATES = {
           type: 'update',
           description: 'Update order to MRI',
           resource: { // Placeholder resource.
-            code: { coding: [{ code: CPT.CARDIAC_MRI, system: CPT._FHIR_CODING_SYSTEM }] },
+            code: {
+              coding: [{
+                code: CPT.CARDIAC_MRI,
+                system: CPT._FHIR_CODING_SYSTEM,
+                display: 'Cardiac MRI',
+              }],
+            },
             reasonCode: [{
               coding: [
                 {
                   code: SNOMED.CONGENITAL_HEART_DISEASE,
                   system: SNOMED._FHIR_CODING_SYSTEM,
+                  display: 'Congenital heart disease',
                 },
               ],
             }],
@@ -105,9 +119,17 @@ function findCodes(codes, systemName) {
 
 function getRatings(resource) {
   const cpt = findCodes([resource.code], CPT._FHIR_CODING_SYSTEM);
-  if (!(cpt[0] in cptReasons)) return [];
   const reasons = new Set(findCodes(resource.reasonCode, SNOMED._FHIR_CODING_SYSTEM));
+  if (!(cpt[0] in cptReasons)) {
+    return [];
+  }
+
   const rating = cptReasons[cpt[0]].getRating(reasons);
+  const mainReason = Array.from(reasons)[0];
+  if (rating === 'no-guidelines-apply' && !indicationsWithGuidelines.includes(mainReason)) {
+    return [];
+  }
+
   return [
     {
       url: 'http://fhir.org/argonaut/Extension/pama-rating',
@@ -153,7 +175,7 @@ function getSystemActions(resources) {
       },
       type: 'update',
     }
-  ));
+  )).filter(a => a.resource.extension.length > 0);
 }
 
 const findSet = (json, path) => new Set(fhirpath.evaluate(json, path));
@@ -210,12 +232,18 @@ router.post('/', (request, response) => {
   const entries = request.body.context.draftOrders.entry;
   const { selections } = request.body.context;
   const resources = findResources(entries, selections);
-  response.json({
+  const cardsAndActions = {
     cards: makeCards(resources, request.body.context),
     extension: {
       systemActions: getSystemActions(resources),
-    },
-  });
+    }
+  }
+
+  if (cardsAndActions.extension.systemActions.length === 0) {
+    delete cardsAndActions.extension;
+  }
+
+  response.json(cardsAndActions);
 });
 
 module.exports = router;
