@@ -21,7 +21,7 @@ describe('PAMA Imaging Service Endpoint', () => {
 
     expect(response.status).toEqual(200);
 
-    if (rating === 'empty-pama-response') {
+    if (rating === null) {
       expect(response.body.extension).toBeFalsy();
       return done();
     }
@@ -48,15 +48,15 @@ describe('PAMA Imaging Service Endpoint', () => {
   }
 
   test('It returns no PAMA response when no reason is given.', (done) => {
-    confirm('empty-pama-response', stub.dummy1, done);
+    confirm(null, stub.dummy1, done);
   });
 
   test('It returns "no-guidelines-apply when no reason is given.', (done) => {
-    confirm('empty-pama-response', stub.dummy2, done);
+    confirm(null, stub.dummy2, done);
   });
 
   test('It returns no PAMA response when no cpt is given.', (done) => {
-    confirm('empty-pama-response', stub.dummy3, done);
+    confirm(null, stub.dummy3, done);
   });
 
   test('It returns "not-appropriate", given "spine CT for low back pain"', (done) => {
@@ -72,7 +72,7 @@ describe('PAMA Imaging Service Endpoint', () => {
   });
 
   test('It returns no PAMA rating, given "CTA Chest for Dyspnea"', (done) => {
-    confirm('empty-pama-response', stub.s1r4, done);
+    confirm(null, stub.s1r4, done);
   });
 
 
