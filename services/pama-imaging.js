@@ -75,14 +75,7 @@ const indicationsWithGuidelines = Object.values(cptReasons)
 const CARD_TEMPLATES = {
   [SNOMED.CONGENITAL_HEART_DISEASE]: [{
     indicator: 'info',
-    links: [
-      {
-        label: 'SMART PAMA Demo App',
-        url: 'https://cds-hooks.github.io/pama-demo-app/',
-        type: 'smart',
-        appContext: { session: 3456356, settings: { module: 4235 } },
-      },
-    ],
+    links: [],
     source: {
       label: 'Dx App Suite',
     },
@@ -201,7 +194,17 @@ function mergeResources(source, recommended) {
   };
 }
 
-function makeCards(resources) {
+function pamaDemoLink(requestContext) {
+  const rval = {
+    label: 'SMART PAMA Demo App',
+    url: 'https://cds-hooks.github.io/pama-demo-app/',
+    type: 'smart',
+    appContext: JSON.stringify(requestContext),
+  };
+  return rval;
+}
+
+function makeCards(resources, requestContext) {
   const proposedReasons = findSet(resources, 'reasonCode.coding.code');
   const matchingCards = Object.entries(CARD_TEMPLATES)
     .filter(x => proposedReasons.has(x[0]))
@@ -214,6 +217,7 @@ function makeCards(resources) {
 
   return matchingCards.slice().map(card => ({
     ...card,
+    links: [pamaDemoLink(requestContext)],
     suggestions: card.suggestions.map(suggestion => ({
       ...suggestion,
       actions: suggestion.actions.map(action => ({
@@ -229,13 +233,13 @@ router.post('/', (request, response) => {
   const { selections } = request.body.context;
   const resources = findResources(entries, selections);
   const cardsAndActions = {
-    cards: makeCards(resources),
+    cards: makeCards(resources, request.body.context),
     extension: {
       systemActions: getSystemActions(resources),
     }
   }
 
-  if (cardsAndActions.extension.systemActions.length === 0){
+  if (cardsAndActions.extension.systemActions.length === 0) {
     delete cardsAndActions.extension;
   }
 
