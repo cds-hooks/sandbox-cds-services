@@ -15,40 +15,48 @@ describe('PAMA Imaging Service Endpoint', () => {
       .send(input)
       .type('json');
 
+    if (response.status !== 200){
+      console.log(response.text)
+    }
+
     expect(response.status).toEqual(200);
-    const { systemActions } = response.body.extension;
 
-    if (systemActions.length > 0) {
-      expect(systemActions).toHaveLength(1);
-      expect(systemActions[0].type).toEqual('update');
-      const ratings = systemActions[0]
-        .resource
-        .extension
-        .filter(e => e.url === 'http://fhir.org/argonaut/Extension/pama-rating')
-        .map(e => e.valueCodeableConcept.coding[0]);
+    if (rating === null) {
+      expect(response.body.extension).toBeFalsy();
+      return done();
+    }
 
-      if (ratings.length > 0) {
-        expect(ratings).toHaveLength(1);
-        expect(ratings[0]).toEqual({
-          system: 'http://fhir.org/argonaut/CodeSystem/pama-rating',
-          code: rating,
-        });
-      }
+    const { systemActions } = response.body.extension || {};
+
+    expect(systemActions).toHaveLength(1);
+    expect(systemActions[0].type).toEqual('update');
+    const ratings = systemActions[0]
+      .resource
+      .extension
+      .filter(e => e.url === 'http://fhir.org/argonaut/Extension/pama-rating')
+      .map(e => e.valueCodeableConcept.coding[0]);
+
+    if (ratings.length > 0) {
+      expect(ratings).toHaveLength(1);
+      expect(ratings[0]).toEqual({
+        system: 'http://fhir.org/argonaut/CodeSystem/pama-rating',
+        code: rating,
+      });
     }
 
     done();
   }
 
-  test('It returns "no-guidelines-apply" when no reason is given.', (done) => {
-    confirm('no-guidelines-apply', stub.dummy1, done);
+  test('It returns no PAMA response when no reason is given.', (done) => {
+    confirm(null, stub.dummy1, done);
   });
 
   test('It returns "no-guidelines-apply when no reason is given.', (done) => {
-    confirm('no-guidelines-apply', stub.dummy2, done);
+    confirm(null, stub.dummy2, done);
   });
 
-  test('It returns "no-guidelines-apply when no cpt is given.', (done) => {
-    confirm('no-guidelines-apply', stub.dummy3, done);
+  test('It returns no PAMA response when no cpt is given.', (done) => {
+    confirm(null, stub.dummy3, done);
   });
 
   test('It returns "not-appropriate", given "spine CT for low back pain"', (done) => {
@@ -62,6 +70,11 @@ describe('PAMA Imaging Service Endpoint', () => {
   test('It returns "no-guidelines-apply", given "MRI for a toothache"', (done) => {
     confirm('no-guidelines-apply', stub.s1r3, done);
   });
+
+  test('It returns no PAMA rating, given "CTA Chest for Dyspnea"', (done) => {
+    confirm(null, stub.s1r4, done);
+  });
+
 
   test('It returns no cards when draft orders meet guidelines', async (done) => {
     const response = await request(app)
