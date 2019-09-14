@@ -86,6 +86,9 @@ describe('PAMA Imaging Service Endpoint', () => {
     expect(cards[0].source.label).toBe('Dx App Suite');
     expect(cards[0].summary).toBe('ACC recommends cardiac MRI');
     expect(cards[0].suggestions[0].actions).toHaveLength(1);
+    expect(cards[0].links).toHaveLength(1);
+    expect(cards[0].links[0].url).toBe('https://cds-hooks.github.io/pama-demo-app/');
+    expect(cards[0].links[0].appContext).toBe(JSON.stringify(stub.s2r2.context));
 
     const action = cards[0].suggestions[0].actions[0];
     expect(action.resource.code.coding).toHaveLength(1);
