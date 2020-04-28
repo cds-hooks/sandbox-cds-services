@@ -1,4 +1,5 @@
 const rxnormSystem = 'http://www.nlm.nih.gov/research/umls/rxnorm';
+const uuidv4 = require('uuid/v4');
 
 const createRequestContext = (resourceType, system, code, id) => {
   let patientPropertyName = resourceType === 'MedicationOrder' ? 'patient' : 'subject';
@@ -115,6 +116,7 @@ const createResponseCard = (cost, newResource, savings) => {
   if (newResource && savings) {
     summary = `Cost: $${cost}. Save $${savings} with a generic medication.`;
     return {
+      uuid: uuidv4(),
       summary: summary,
       source: source,
       indicator: 'info',
@@ -135,6 +137,7 @@ const createResponseCard = (cost, newResource, savings) => {
   } else {
     summary = `Cost: $${cost}`;
     return {
+      uuid: uuidv4(),
       summary: summary,
       source: source,
       indicator: 'info'

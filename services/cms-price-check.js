@@ -66,6 +66,7 @@ function getValidContextResources(request) {
 
 function constructCard(summary, suggestionResource) {
   const card = {
+    uuid: uuidv4(),
     summary,
     source: { label: 'CMS Public Use Files' },
     indicator: 'info',

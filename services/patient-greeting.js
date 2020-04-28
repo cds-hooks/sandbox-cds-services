@@ -1,5 +1,6 @@
 const express = require('express');
 const axios = require('axios');
+const uuidv4 = require('uuid/v4');
 
 const router = express.Router();
 
@@ -36,6 +37,7 @@ function buildCard(patient) {
   const name = patient.name[0].given[0];
   return {
     cards: [{
+      uuid: uuidv4(),
       summary: `Now seeing: ${name}`,
       source: {
         label: 'Patient greeting service',

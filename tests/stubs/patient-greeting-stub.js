@@ -1,3 +1,5 @@
+const uuidv4 = require('uuid/v4');
+
 function getGivenName() {
   return 'Test';
 }
@@ -41,6 +43,7 @@ module.exports = {
   validResponse: {
     cards: [
       {
+        uuid: uuidv4(),
         summary: `Now seeing: ${getGivenName()}`,
         source: {
           label: 'Patient greeting service',

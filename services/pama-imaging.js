@@ -4,7 +4,7 @@
 const express = require('express');
 const fhirpath = require('fhirpath');
 const flatMap = require('array.prototype.flatmap');
-const uuid = require('uuid');
+const uuidv4 = require('uuid/v4');
 
 const router = express.Router();
 
@@ -146,7 +146,7 @@ function getRatings(resource) {
     },
     {
       url: 'http://fhir.org/argonaut/Extension/pama-rating-consult-id',
-      valueUri: `urn:uuid:${uuid.v4()}`,
+      valueUri: `urn:uuid:${uuidv4()}`,
     },
   ];
 }
@@ -216,6 +216,7 @@ function makeCards(resources, requestContext) {
   if (Reasons.covers(guidelineActions, selectedActions)) return [];
 
   return matchingCards.slice().map(card => ({
+    uuid: uuidv4(),
     ...card,
     links: [pamaDemoLink(requestContext)],
     suggestions: card.suggestions.map(suggestion => ({
