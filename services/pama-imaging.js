@@ -25,7 +25,7 @@ const SNOMED = {
   HEADACHE: '25064002',
   LOW_BACK_PAIN: '279039007',
   OPTIC_DISC_EDEMA: '423341008',
-  TOOTHACHE: '27355003'
+  TOOTHACHE: '27355003',
 };
 
 class Reasons {
@@ -68,9 +68,9 @@ const cptReasons = {
 };
 
 const indicationsWithGuidelines = Object.values(cptReasons)
-  .flatMap(x=>x.appropriate)
+  .flatMap(x => x.appropriate)
   .filter(x => x.size === 1)
-  .map(s => Array.from(s)[0])
+  .map(s => Array.from(s)[0]);
 
 const CARD_TEMPLATES = {
   [SNOMED.CONGENITAL_HEART_DISEASE]: [{
@@ -237,8 +237,8 @@ router.post('/', (request, response) => {
     cards: makeCards(resources, request.body.context),
     extension: {
       systemActions: getSystemActions(resources),
-    }
-  }
+    },
+  };
 
   if (cardsAndActions.extension.systemActions.length === 0) {
     delete cardsAndActions.extension;
