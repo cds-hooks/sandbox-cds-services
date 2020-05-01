@@ -4,6 +4,10 @@ const express = require('express');
 const app = require('../index.js');
 const stub = require('./stubs/cms-price-check-stub');
 
+jest.mock("uuid/v4", () => {
+  return () => 1;
+});
+
 describe('CMS Price Check Service Endpoint', () => {
   describe('GET', () => {
     test('should respond with a 404 and empty body', (done) => {
