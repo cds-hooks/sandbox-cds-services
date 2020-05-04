@@ -20,22 +20,22 @@
   },
   "homepage": "https://github.com/cds-hooks/sandbox-cds-services#readme",
   "dependencies": {
-    "array.prototype.flatmap": "^1.2.1",
-    "axios": "^0.18.0",
-    "body-parser": "^1.18.3",
-    "express": "^4.16.3",
-    "fhirpath": "^0.17.0",
-    "uuid": "^3.2.1"
+    "array.prototype.flatmap": "^1.2.3",
+    "axios": "^0.18.1",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "fhirpath": "^0.17.5",
+    "uuid": "^3.4.0"
   },
   "devDependencies": {
-    "axios-mock-adapter": "^1.15.0",
-    "coveralls": "^3.0.1",
+    "axios-mock-adapter": "^1.18.1",
+    "coveralls": "^3.1.0",
     "eslint": "^4.19.1",
     "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-plugin-import": "^2.12.0",
+    "eslint-plugin-import": "^2.20.2",
     "jest": "^22.4.4",
-    "nodemon": "^1.17.4",
-    "supertest": "^3.1.0"
+    "nodemon": "^1.19.4",
+    "supertest": "^3.4.2"
   },
   "jest": {
     "coveragePathIgnorePatterns": [
