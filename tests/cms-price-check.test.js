@@ -108,10 +108,10 @@ describe('CMS Price Check Service Endpoint', () => {
       });
     });
 
-    describe('Analytics Endpoint', () => {
-      test('returns a 200 for any UUID param', (done) => {
+    describe('Feedback Endpoint', () => {
+      test('returns a 200 for any request', (done) => {
         request(app)
-          .post('/cds-services/cms-price-check/analytics/123')
+          .post('/cds-services/cms-price-check/feedback')
           .send({})
           .type('json')
           .then((response) => {

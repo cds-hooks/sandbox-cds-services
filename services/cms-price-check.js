@@ -174,10 +174,10 @@ router.post('/', (request, response) => {
   response.json(cards);
 });
 
-// Analytics endpoint
-// Because this is a sample service, this service won't include logic to store suggestion UUIDs
-// externally to some store to validate the UUID parameter at the analytics endpoint
-router.post('/analytics/:uuid', (request, response) => {
+// Feedback endpoint
+// Because this is a sample service, this service won't include logic to store card or suggestion
+// UUIDs externally to some store to validate the UUID parameter at the feedback endpoint
+router.post('/feedback', (request, response) => {
   response.sendStatus(200);
 });
 
