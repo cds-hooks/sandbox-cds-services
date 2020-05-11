@@ -168,6 +168,12 @@ describe('CMS Price Check Service Endpoint', () => {
                   });
                 }
               }
+
+              expect(resCard.overrideReasons).not.toHaveLength(0);
+              const overrideReasonKeys = ['code', 'display', 'system'];
+              resCard.overrideReasons.forEach((reason) => {
+                expect(Object.keys(reason).sort()).toEqual(overrideReasonKeys);
+              });
             }
             expect(resCard.summary).toEqual('Cost: $5.47. Save $0.73 with a generic medication.');
             verifyStatusAndHeaders(response);
