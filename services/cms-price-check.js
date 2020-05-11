@@ -84,6 +84,19 @@ function constructCard(summary, suggestionResource) {
         },
       ],
     }];
+
+    card.overrideReasons = [
+      {
+        code: 'patient-requested-brand',
+        system: 'http://terminology.cds-hooks.org/CodeSystem/OverrideReasons',
+        display: 'Patient Requested Brand Product',
+      },
+      {
+        code: 'generic-drug-unavailable',
+        system: 'http://terminology.cds-hooks.org/CodeSystem/OverrideReasons',
+        display: 'Generic Drug Out of Stock or Unavailable',
+      },
+    ];
   }
   return card;
 }
