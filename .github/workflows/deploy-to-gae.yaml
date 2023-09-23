@@ -19,3 +19,5 @@ jobs:
         service_account: github-deploy@fhir-org-cds-services.iam.gserviceaccount.com
     - id: deploy
       uses: google-github-actions/deploy-appengine@v1
+      with:
+        flags: "--verbosity=debug"
