@@ -10,10 +10,12 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - id: 'auth'
-      uses: 'google-github-actions/auth@v1'
+    - name: Checkout 🛎️
+      uses: actions/checkout@v2
+    - id: auth
+      uses: google-github-actions/auth@v1
       with:
-        workload_identity_provider: 'projects/769700566231/locations/global/workloadIdentityPools/gh-actions-pool/providers/github'
-        service_account: 'github-deploy@fhir-org-cds-services.iam.gserviceaccount.com'
-    - id: 'deploy'
-      uses: 'google-github-actions/deploy-appengine@v1'
+        workload_identity_provider: projects/769700566231/locations/global/workloadIdentityPools/gh-actions-pool/providers/github
+        service_account: github-deploy@fhir-org-cds-services.iam.gserviceaccount.com
+    - id: deploy
+      uses: google-github-actions/deploy-appengine@v1
