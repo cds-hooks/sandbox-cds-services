@@ -19,5 +19,5 @@ jobs:
         service_account: github-deploy@fhir-org-cds-services.iam.gserviceaccount.com
     - id: deploy
       uses: google-github-actions/deploy-appengine@v1
-      with:
-        flags: "--verbosity=debug"
+      env:
+        CLOUDSDK_APP_CLOUD_BUILD_TIMEOUT: 1800 # 30 minutes
