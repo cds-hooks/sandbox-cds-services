@@ -1,0 +1,32 @@
+name: Deploy to GAE
+on:
+  push:
+    branches:
+    - master
+permissions:
+  contents: 'read'
+  id-token: 'write'
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout 🛎️
+      uses: actions/checkout@v2
+    - id: auth
+      uses: google-github-actions/auth@v1
+      with:
+        workload_identity_provider: projects/769700566231/locations/global/workloadIdentityPools/gh-actions-pool/providers/github
+        service_account: github-deploy@fhir-org-cds-services.iam.gserviceaccount.com
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        version: '>= 363.0.0'
+    - name: Build and Deploy
+      run: |
+        gcloud auth configure-docker us-east1-docker.pkg.dev --quiet
+        docker build --tag us-east1-docker.pkg.dev/fhir-org-cds-services/sandbox-cds-services/server:latest .
+        docker push us-east1-docker.pkg.dev/fhir-org-cds-services/sandbox-cds-services/server:latest
+        gcloud run deploy sandbox-cds-services \
+          --image=us-east1-docker.pkg.dev/fhir-org-cds-services/sandbox-cds-services/server:latest \
+          --region=us-central1 \
+          --project=fhir-org-cds-services
